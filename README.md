@@ -31,6 +31,12 @@ los cambios van en un archivo nuevo (`V2__...sql`).
 - **Cajitas** (`/cajitas`): saldos calculados desde los movimientos, aportes, retiros, rendimientos, saldo inicial y reparto sugerido por porcentajes con cajita "resto" (RN-03 a RN-05).
 - **Fuentes y categorías** (`/fuentes`, `/categorias`): se desactivan en lugar de borrarse, para conservar el histórico.
 
+## Seguridad (V5)
+
+- Límite de intentos de inicio de sesión (`seguridad.LimitadorIntentosLogin`): 5 fallos por IP + usuario o 20 por IP bloquean 15 minutos; el filtro corta antes de verificar la contraseña.
+- Recuperación de contraseña con PIN temporal impreso en la consola del servidor (`/recuperar`).
+- En producción, Caddy termina el HTTPS y Tomcat toma la IP real de `X-Forwarded-For` solo si viene de la red interna de Docker.
+
 ## Módulos (V3)
 
 - **Recurrentes** (`/recurrentes`): pagos o ingresos que se repiten (semanal, cada 15 días, mensual, anual). Aparecen en el inicio unos días antes y se confirman con el monto real u omiten; el registro pasa por `MovimientoService`, con sus mismas reglas.
@@ -67,7 +73,7 @@ del PC (`ip -4 addr`), por ejemplo `http://192.168.1.10:8080`.
 | `APP_CLAVE_RECORDARME` | Clave que firma la cookie "mantener la sesión" (obligatoria) |
 | `APP_NOMBRE` | Nombre visible de la aplicación |
 
-Guía completa para producción, HTTPS y uso desde el teléfono: [DESPLIEGUE.md](DESPLIEGUE.md).
+Guía completa para publicar en un droplet de DigitalOcean con HTTPS: [DESPLIEGUE.md](DESPLIEGUE.md).
 
 ## Pruebas
 

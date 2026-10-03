@@ -1,0 +1,7 @@
+# Caddy: recibe el trafico de internet, obtiene y renueva solo el
+# certificado HTTPS (Let's Encrypt) y se lo pasa a Eden por la red interna.
+# El dominio sale de la variable DOMINIO del archivo .env.
+{$DOMINIO} {
+	encode zstd gzip
+	reverse_proxy app:8080
+}

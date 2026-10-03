@@ -15,6 +15,9 @@
 
         <p th:if="${mensaje}" class="aviso aviso-exito" role="status" th:text="${mensaje}"></p>
         <p th:if="${param.salida}" class="aviso" role="status">Cerraste sesión.</p>
+        <p th:if="${param.bloqueado}" class="aviso aviso-error" role="alert">
+            Demasiados intentos fallidos. Por seguridad, espera 15 minutos e intenta de nuevo.
+        </p>
         <p th:if="${param.error}" class="aviso aviso-error" role="alert">
             Usuario o contraseña incorrectos. Revisa los datos e intenta de nuevo.
         </p>

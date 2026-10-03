@@ -7,6 +7,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import com.eden.seguridad.FiltroIntentosLogin;
+import com.eden.seguridad.LimitadorIntentosLogin;
 
 /**
  * Configuracion de Spring Security. CSRF queda activo por defecto
@@ -37,8 +40,10 @@ public class SeguridadConfig {
     }
 
     @Bean
-    public SecurityFilterChain cadenaDeFiltros(HttpSecurity http) throws Exception {
+    public SecurityFilterChain cadenaDeFiltros(HttpSecurity http, LimitadorIntentosLogin limitador) throws Exception {
         http
+            // Frena la fuerza bruta antes de que la contrasena llegue a verificarse.
+            .addFilterBefore(new FiltroIntentosLogin(limitador), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(autorizacion -> autorizacion
                     .requestMatchers(RUTAS_PUBLICAS).permitAll()
                     .anyRequest().authenticated())
