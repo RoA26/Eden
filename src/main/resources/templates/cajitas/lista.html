@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Cajitas')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado"><h1>Cajitas</h1></header>
+
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <section class="disponible disponible-compacto">
+        <p class="disponible-etiqueta">Disponible por repartir</p>
+        <p class="disponible-monto" th:text="${@formato.pesos(disponible)}">$ 0</p>
+        <a class="boton boton-claro" th:if="${disponible.signum() > 0 and !cajitas.isEmpty()}"
+           th:href="@{/cajitas/repartir}">Repartir</a>
+    </section>
+
+    <section class="bloque">
+        <a class="tarjeta tarjeta-enlace" th:each="c : ${cajitas}" th:href="@{/cajitas/{id}(id=${c.id})}"
+           th:classappend="${!c.activa} ? 'inactiva'">
+            <div class="tarjeta-fila">
+                <h2 th:text="${c.nombre}">Daniela</h2>
+                <strong th:text="${@formato.pesos(c.saldo)}">$ 0</strong>
+            </div>
+            <p class="tarjeta-detalle">
+                <span th:text="${c.proposito.etiqueta}">Capital</span>
+                <span th:text="${c.esResto} ? 'Recibe lo que sobra del reparto' : ${@formato.porcentaje(c.porcentaje)} + ' de cada reparto'">40% de cada reparto</span>
+                <span th:unless="${c.activa}">Desactivada</span>
+            </p>
+        </a>
+    </section>
+
+    <details class="bloque desplegable" th:attr="open=${abrirFormulario != null or cajitas.isEmpty()} ? 'open' : null">
+        <summary>Nueva cajita</summary>
+        <form th:action="@{/cajitas}" th:object="${formulario}" method="post" class="formulario" novalidate>
+            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+
+            <label for="nombre">Nombre</label>
+            <input id="nombre" type="text" th:field="*{nombre}" maxlength="40" placeholder="Ej. Daniela"
+                   th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
+            <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+
+            <label for="proposito">Propósito</label>
+            <select id="proposito" th:field="*{proposito}">
+                <option th:each="p : ${propositos}" th:value="${p}" th:text="${p.etiqueta}">Capital</option>
+            </select>
+
+            <label for="porcentaje">Porcentaje de cada reparto</label>
+            <input id="porcentaje" type="number" min="0" max="100" step="0.5" th:field="*{porcentaje}"
+                   th:classappend="${#fields.hasErrors('porcentaje')} ? 'con-error'">
+            <p class="error-campo" th:if="${#fields.hasErrors('porcentaje')}" th:errors="*{porcentaje}"></p>
+
+            <label class="casilla">
+                <input type="checkbox" th:field="*{esResto}">
+                Esta cajita recibe lo que sobra (como Chelas)
+            </label>
+
+            <label for="saldoInicial">Saldo que ya tiene en Nu (opcional)</label>
+            <input id="saldoInicial" type="text" inputmode="decimal" th:field="*{saldoInicial}" placeholder="Ej. 1.500.000"
+                   class="entrada-monto" th:classappend="${#fields.hasErrors('saldoInicial')} ? 'con-error'">
+            <p class="error-campo" th:if="${#fields.hasErrors('saldoInicial')}" th:errors="*{saldoInicial}"></p>
+
+            <button type="submit" class="boton boton-principal">Crear cajita</button>
+        </form>
+    </details>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Metas')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado encabezado-con-acciones">
+        <h1>Metas</h1>
+        <a class="boton boton-claro boton-pequeno" th:href="@{/metas/nueva}">Nueva meta</a>
+    </header>
+
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <p class="vacio" th:if="${metas.isEmpty()}">
+        Una meta se vincula a una cajita y su progreso es el saldo de esa cajita. Por ejemplo: "Repuestos del motocarro", en Emergencia.
+    </p>
+
+    <article class="tarjeta" th:each="pm : ${metas}" th:with="m=${pm.meta()}" th:classappend="${!m.activa} ? 'inactiva'">
+        <div class="tarjeta-fila">
+            <h2 th:text="${m.nombre}">Moto nueva</h2>
+            <strong th:text="${pm.porcentaje()} + '%'">40%</strong>
+        </div>
+        <progress class="barra" max="100" th:value="${pm.porcentaje()}" th:text="${pm.porcentaje()} + '%'"></progress>
+        <p class="tarjeta-detalle">
+            <span th:text="${@formato.pesos(m.saldoCajita)} + ' de ' + ${@formato.pesos(m.montoObjetivo)}">$ 0 de $ 0</span>
+            <span th:text="'En ' + ${m.nombreCajita}">En Daniela</span>
+            <span th:if="${m.fechaObjetivo}" th:text="'Para el ' + ${@formato.fecha(m.fechaObjetivo)}"></span>
+        </p>
+        <p class="nota" th:if="${pm.cumplida()}">¡Meta cumplida!</p>
+        <p class="nota" th:if="${pm.vencida()}">La fecha objetivo ya pasó. Puedes ajustarla.</p>
+        <p class="nota" th:if="${!pm.cumplida() and pm.aporteMensual() != null}"
+           th:text="'Faltan ' + ${@formato.pesos(pm.faltante())} + ': aporta ' + ${@formato.pesos(pm.aporteMensual())}
+                    + ' al mes durante ' + ${pm.mesesRestantes()} + (${pm.mesesRestantes() == 1} ? ' mes.' : ' meses.')"></p>
+        <div class="acciones-fila">
+            <a th:href="@{/metas/{id}/editar(id=${m.id})}">Editar</a>
+            <form th:action="@{/metas/{id}/estado(id=${m.id})}" method="post">
+                <input type="hidden" name="activa" th:value="${!m.activa}">
+                <button type="submit" class="enlace" th:text="${m.activa} ? 'Archivar' : 'Reactivar'">Archivar</button>
+            </form>
+            <form th:action="@{/metas/{id}/eliminar(id=${m.id})}" method="post"
+                  data-confirmar="¿Eliminar esta meta? El dinero sigue en su cajita.">
+                <button type="submit" class="enlace-peligro">Eliminar</button>
+            </form>
+        </div>
+    </article>
+    <p class="nota" th:unless="${metas.isEmpty()}">Si dos metas usan la misma cajita, ambas cuentan el mismo saldo.</p>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

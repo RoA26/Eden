@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Recurrente')}"></head>
+<body>
+<main class="contenido" th:with="esNuevo=${idRecurrente == null}">
+    <p class="migas"><a th:href="@{/recurrentes}">Recurrentes</a></p>
+    <header class="encabezado">
+        <h1 th:text="${esNuevo} ? 'Nuevo recurrente' : 'Editar recurrente'">Nuevo recurrente</h1>
+    </header>
+
+    <form th:action="${esNuevo} ? @{/recurrentes/nuevo} : @{/recurrentes/{id}/editar(id=${idRecurrente})}"
+          th:object="${formulario}" method="post" class="formulario" novalidate>
+        <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" th:field="*{nombre}" maxlength="60" placeholder="Ej. Arriendo"
+               th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+
+        <label for="tipo">Tipo</label>
+        <select id="tipo" th:field="*{tipo}">
+            <option value="GASTO">Gasto</option>
+            <option value="INGRESO">Ingreso</option>
+        </select>
+
+        <label for="monto">Monto habitual</label>
+        <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" class="entrada-monto"
+               th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
+
+        <label for="idCategoria">Categoría</label>
+        <select id="idCategoria" th:field="*{idCategoria}" th:classappend="${#fields.hasErrors('idCategoria')} ? 'con-error'">
+            <optgroup label="Gastos personales">
+                <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}">Arriendo</option>
+            </optgroup>
+            <optgroup label="Costos operativos">
+                <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">SOAT y documentos</option>
+            </optgroup>
+            <optgroup label="Ingresos">
+                <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}">Salario</option>
+            </optgroup>
+        </select>
+        <p class="ayuda">La categoría debe corresponder al tipo elegido.</p>
+        <p class="error-campo" th:if="${#fields.hasErrors('idCategoria')}" th:errors="*{idCategoria}"></p>
+
+        <label for="idFuente">Fuente</label>
+        <select id="idFuente" th:field="*{idFuente}" th:classappend="${#fields.hasErrors('idFuente')} ? 'con-error'">
+            <option value="">Ninguna</option>
+            <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
+        </select>
+        <p class="ayuda">Obligatoria para costos operativos, como el SOAT del motocarro.</p>
+        <p class="error-campo" th:if="${#fields.hasErrors('idFuente')}" th:errors="*{idFuente}"></p>
+
+        <label for="idCajitaOrigen">Si es gasto, pagarlo desde</label>
+        <select id="idCajitaOrigen" th:field="*{idCajitaOrigen}">
+            <option value="">El disponible</option>
+            <option th:each="c : ${cajitas}" th:value="${c.id}" th:text="${c.nombre}">Atenea</option>
+        </select>
+        <p class="error-campo" th:if="${#fields.hasErrors('idCajitaOrigen')}" th:errors="*{idCajitaOrigen}"></p>
+
+        <label for="periodicidad">Se repite</label>
+        <select id="periodicidad" th:field="*{periodicidad}">
+            <option th:each="p : ${periodicidades}" th:value="${p}" th:text="${p.etiqueta}">Cada mes</option>
+        </select>
+
+        <label for="proximaFecha">Próxima fecha</label>
+        <input id="proximaFecha" type="date" th:field="*{proximaFecha}"
+               th:classappend="${#fields.hasErrors('proximaFecha')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('proximaFecha')}" th:errors="*{proximaFecha}"></p>
+
+        <label for="diasAviso">Avisarme con cuántos días de anticipación</label>
+        <input id="diasAviso" type="number" min="0" max="30" th:field="*{diasAviso}"
+               th:classappend="${#fields.hasErrors('diasAviso')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('diasAviso')}" th:errors="*{diasAviso}"></p>
+
+        <button type="submit" class="boton boton-principal" th:text="${esNuevo} ? 'Programar' : 'Guardar cambios'">Programar</button>
+        <a class="boton boton-claro" th:href="@{/recurrentes}">Cancelar</a>
+    </form>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

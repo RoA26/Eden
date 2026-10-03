@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Movimientos')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado encabezado-con-acciones">
+        <h1>Movimientos</h1>
+        <div class="acciones-compactas" th:unless="${soloLectura}">
+            <a class="boton boton-claro boton-pequeno" th:href="@{/movimientos/nuevo(tipo='GASTO')}">Nuevo gasto</a>
+            <a class="boton boton-claro boton-pequeno" th:href="@{/movimientos/nuevo(tipo='INGRESO')}">Nuevo ingreso</a>
+        </div>
+    </header>
+
+    <div th:replace="~{fragmentos/base :: bannerCompartido}"></div>
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <details class="filtros">
+        <summary>Filtrar</summary>
+        <form th:action="@{${baseRuta + '/movimientos'}}" th:object="${filtro}" method="get" class="formulario formulario-rejilla">
+            <label for="desde">Desde</label>
+            <input id="desde" type="date" th:field="*{desde}">
+            <label for="hasta">Hasta</label>
+            <input id="hasta" type="date" th:field="*{hasta}">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" th:field="*{tipo}">
+                <option value="">Todos</option>
+                <option th:each="tp : ${tipos}" th:value="${tp}" th:text="${tp.etiqueta}">Ingreso</option>
+            </select>
+            <label for="idCategoria">Categoría</label>
+            <select id="idCategoria" th:field="*{idCategoria}">
+                <option value="">Todas</option>
+                <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
+            </select>
+            <label for="idFuente">Fuente</label>
+            <select id="idFuente" th:field="*{idFuente}">
+                <option value="">Todas</option>
+                <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
+            </select>
+            <button type="submit" class="boton boton-principal">Aplicar filtros</button>
+        </form>
+    </details>
+
+    <p class="rango" th:text="${@formato.fecha(filtro.desde)} + ' a ' + ${@formato.fecha(filtro.hasta)}"
+       th:if="${filtro.desde != null and filtro.hasta != null}">1 sep a 30 sep</p>
+
+    <dl class="cifras">
+        <div><dt>Ingresos</dt><dd class="monto-ingreso" th:text="${@formato.pesos(pagina.totalIngresos())}">$ 0</dd></div>
+        <div><dt>Gastos</dt><dd class="monto-gasto" th:text="${@formato.pesos(pagina.totalGastos())}">$ 0</dd></div>
+        <div><dt>Balance</dt><dd th:text="${@formato.pesos(pagina.balance())}">$ 0</dd></div>
+    </dl>
+
+    <p class="vacio" th:if="${pagina.movimientos().isEmpty()}">No hay movimientos en este periodo.</p>
+
+    <th:block th:each="m : ${pagina.movimientos()}">
+        <article th:replace="~{fragmentos/base :: filaMovimiento(${m}, '/movimientos')}"></article>
+    </th:block>
+
+    <nav class="paginacion" aria-label="Paginación" th:if="${pagina.hayAnterior() or pagina.haySiguiente()}">
+        <a th:if="${pagina.hayAnterior()}"
+           th:href="@{${baseRuta + '/movimientos'}(desde=${filtro.desde},hasta=${filtro.hasta},tipo=${filtro.tipo},idCategoria=${filtro.idCategoria},idFuente=${filtro.idFuente},pagina=${pagina.pagina() - 1})}">Anteriores</a>
+        <a th:if="${pagina.haySiguiente()}"
+           th:href="@{${baseRuta + '/movimientos'}(desde=${filtro.desde},hasta=${filtro.hasta},tipo=${filtro.tipo},idCategoria=${filtro.idCategoria},idFuente=${filtro.idFuente},pagina=${pagina.pagina() + 1})}">Siguientes</a>
+    </nav>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('movimientos')}"></nav>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="cabecera(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#050a07">
+    <title th:text="${titulo} + ' | ' + ${nombreApp ?: 'Eden'}">Eden</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&display=swap">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/acceso.css}">
+    <link rel="manifest" th:href="@{/manifest.json}">
+    <link rel="icon" type="image/png" sizes="192x192" th:href="@{/iconos/icono-192.png}">
+    <link rel="apple-touch-icon" th:href="@{/iconos/icono-180.png}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Eden">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+
+<!-- Barra inferior de navegacion (movil primero) -->
+<nav th:fragment="navegacion(activa)" class="navegacion" aria-label="Navegación principal">
+    <a th:href="@{/inicio}" th:classappend="${activa == 'inicio'} ? 'activa'">Inicio</a>
+    <a th:href="@{/movimientos}" th:classappend="${activa == 'movimientos'} ? 'activa'">Movimientos</a>
+    <a th:href="@{/registrar}" class="navegacion-registrar" aria-label="Registrar producido"
+       th:classappend="${activa == 'registrar'} ? 'activa'">+</a>
+    <a th:href="@{/calendario}" th:classappend="${activa == 'calendario'} ? 'activa'">Calendario</a>
+    <a th:href="@{/mas}" th:classappend="${activa == 'mas'} ? 'activa'">Más</a>
+</nav>
+
+<!-- Mensajes flash de exito o error -->
+<div th:fragment="avisos" class="avisos">
+    <p th:if="${mensaje}" class="aviso aviso-exito" role="status" th:text="${mensaje}"></p>
+    <p th:if="${error}" class="aviso aviso-error" role="alert" th:text="${error}"></p>
+</div>
+
+<!-- Fila de un movimiento; 'volver' es la ruta a la que regresa tras eliminar -->
+<article th:fragment="filaMovimiento(m, volver)" class="fila-mov">
+    <div class="fila-mov-info">
+        <p class="fila-mov-titulo"
+           th:text="${m.tipo.esIngresoOGasto()} ? ${m.nombreCategoria} : ${m.tipo.etiqueta}">Combustible</p>
+        <p class="fila-mov-detalle">
+            <span th:text="${@formato.fecha(m.fecha)}">mié 23 sep</span>
+            <span th:if="${m.nombreFuente}" th:text="${m.nombreFuente}">Motocarro</span>
+            <span th:if="${m.nombreCajita}" th:text="${m.nombreCajita}">Daniela</span>
+            <span th:if="${m.nombreCajitaOrigen}" th:text="'Pagado desde ' + ${m.nombreCajitaOrigen}"></span>
+            <span th:if="${m.descripcion}" th:text="${m.descripcion}"></span>
+        </p>
+    </div>
+    <div class="fila-mov-lado">
+        <p class="fila-mov-monto"
+           th:classappend="${m.tipo.name() == 'INGRESO'} ? 'monto-ingreso' : (${m.tipo.name() == 'GASTO'} ? 'monto-gasto' : 'monto-neutro')"
+           th:text="(${m.tipo.name() == 'INGRESO'} ? '+ ' : (${m.tipo.name() == 'GASTO'} ? '− ' : '')) + ${@formato.pesos(m.monto)}">$ 0</p>
+        <div class="fila-mov-acciones" th:unless="${soloLectura}">
+            <a th:if="${m.editable}" th:href="@{/movimientos/{id}/editar(id=${m.id})}">Editar</a>
+            <form th:if="${m.eliminable}" th:action="@{/movimientos/{id}/eliminar(id=${m.id})}" method="post"
+                  data-confirmar="¿Eliminar este movimiento?">
+                <input type="hidden" name="volver" th:value="${volver}">
+                <button type="submit" class="enlace-peligro">Eliminar</button>
+            </form>
+        </div>
+    </div>
+</article>
+
+<!-- Aviso y navegacion de una cuenta compartida (solo lectura) -->
+<div th:fragment="bannerCompartido" class="banner-compartido" th:if="${soloLectura}">
+    <p>Estás viendo la cuenta de <strong th:text="${nombreTitular}">Papá</strong>. Solo lectura.</p>
+    <nav class="pestanas" aria-label="Secciones de la cuenta compartida">
+        <a th:href="@{${baseRuta + '/inicio'}}">Inicio</a>
+        <a th:href="@{${baseRuta + '/movimientos'}}">Movimientos</a>
+        <a th:href="@{${baseRuta + '/calendario'}}">Calendario</a>
+    </nav>
+    <a th:href="@{/inicio}">Volver a mi cuenta</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+# Eden en produccion: base de datos + aplicacion.
+#   1. cp .env.ejemplo .env   (y llena los valores)
+#   2. docker compose -f docker-compose.prod.yml up -d --build
+# La app queda en http://127.0.0.1:8080 (solo este equipo); para el telefono
+# se publica con HTTPS mediante Tailscale (ver DESPLIEGUE.md).
+name: eden
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: eden
+      POSTGRES_USER: eden
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en el archivo .env}
+      TZ: America/Bogota
+    volumes:
+      - datos_eden:/var/lib/postgresql/data
+    # Sin "ports": la base de datos no es accesible desde fuera de Docker.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eden -d eden"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/eden
+      DB_USER: eden
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_CODIGO_INVITACION: ${APP_CODIGO_INVITACION:?Define APP_CODIGO_INVITACION en el archivo .env}
+      APP_CLAVE_RECORDARME: ${APP_CLAVE_RECORDARME:?Define APP_CLAVE_RECORDARME en el archivo .env}
+      TZ: America/Bogota
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  datos_eden:

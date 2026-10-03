@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Recuperar contraseña')}"></head>
+<body class="pagina-acceso">
+<div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
+<main class="acceso">
+    <header class="acceso-cabecera">
+        <img class="acceso-logo" th:src="@{/iconos/icono-192.png}" alt="" width="68" height="68">
+        <h1 class="acceso-marca" th:text="${nombreApp}">Eden</h1>
+    </header>
+
+    <section class="acceso-hoja" aria-labelledby="titulo-recuperar">
+        <h2 id="titulo-recuperar" class="acceso-titulo">¿Olvidaste tu contraseña?</h2>
+        <p class="acceso-subtitulo">Escribe tu usuario. Se generará un PIN de 6 dígitos en la consola del
+            servidor; pídeselo a quien administra Eden.</p>
+
+        <form th:action="@{/recuperar}" th:object="${formulario}" method="post" class="formulario-acceso" novalidate>
+            <div class="campo-flotante">
+                <input id="nombreUsuario" type="text" th:field="*{nombreUsuario}" placeholder=" "
+                       autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"
+                       enterkeyhint="send" maxlength="30" required
+                       th:classappend="${#fields.hasErrors('nombreUsuario')} ? 'con-error'">
+                <label for="nombreUsuario">Usuario</label>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}"></p>
+
+            <button type="submit" class="boton boton-principal boton-bloque">Generar PIN</button>
+        </form>
+
+        <div class="acceso-enlaces">
+            <a th:href="@{/recuperar/confirmar}" class="enlace-discreto">Ya tengo un PIN</a>
+            <a th:href="@{/login}">Volver a iniciar sesión</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

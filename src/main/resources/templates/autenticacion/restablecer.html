@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Nueva contraseña')}"></head>
+<body class="pagina-acceso">
+<div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
+<main class="acceso">
+    <header class="acceso-cabecera">
+        <img class="acceso-logo" th:src="@{/iconos/icono-192.png}" alt="" width="68" height="68">
+        <h1 class="acceso-marca" th:text="${nombreApp}">Eden</h1>
+    </header>
+
+    <section class="acceso-hoja" aria-labelledby="titulo-restablecer">
+        <h2 id="titulo-restablecer" class="acceso-titulo">Nueva contraseña</h2>
+        <p th:if="${mensaje}" class="aviso aviso-exito" role="status" th:text="${mensaje}"></p>
+
+        <form th:action="@{/recuperar/confirmar}" th:object="${formulario}" method="post"
+              class="formulario-acceso" novalidate>
+            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert"
+               th:text="${#fields.globalErrors()[0]}"></p>
+
+            <div class="campo-flotante">
+                <input id="nombreUsuario" type="text" th:field="*{nombreUsuario}" placeholder=" "
+                       autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"
+                       enterkeyhint="next" maxlength="30" required
+                       th:classappend="${#fields.hasErrors('nombreUsuario')} ? 'con-error'">
+                <label for="nombreUsuario">Usuario</label>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}"></p>
+
+            <!-- PIN y contrasenas sin th:field: nunca se devuelven a la vista -->
+            <div class="campo-flotante campo-pin">
+                <input id="pin" name="pin" type="text" placeholder=" " inputmode="numeric" pattern="[0-9]*"
+                       autocomplete="one-time-code" maxlength="6" enterkeyhint="next" required
+                       th:classappend="${#fields.hasErrors('pin')} ? 'con-error'">
+                <label for="pin">PIN de 6 dígitos</label>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('pin')}" th:errors="*{pin}"></p>
+
+            <div class="campo-flotante campo-contrasena">
+                <input id="contrasena" name="contrasena" type="password" placeholder=" "
+                       autocomplete="new-password" enterkeyhint="next" minlength="8" maxlength="72" required
+                       th:classappend="${#fields.hasErrors('contrasena')} ? 'con-error'">
+                <label for="contrasena">Nueva contraseña (mínimo 8)</label>
+                <button type="button" class="ver-contrasena" data-alternar-contrasena="contrasena"
+                        aria-label="Mostrar contraseña" aria-pressed="false">Ver</button>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}"></p>
+
+            <div class="campo-flotante campo-contrasena">
+                <input id="confirmacionContrasena" name="confirmacionContrasena" type="password" placeholder=" "
+                       autocomplete="new-password" enterkeyhint="done" maxlength="72" required
+                       th:classappend="${#fields.hasErrors('confirmacionContrasena')} ? 'con-error'">
+                <label for="confirmacionContrasena">Repite la contraseña</label>
+                <button type="button" class="ver-contrasena" data-alternar-contrasena="confirmacionContrasena"
+                        aria-label="Mostrar contraseña" aria-pressed="false">Ver</button>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('confirmacionContrasena')}" th:errors="*{confirmacionContrasena}"></p>
+
+            <button type="submit" class="boton boton-principal boton-bloque">Guardar contraseña</button>
+        </form>
+
+        <div class="acceso-enlaces">
+            <a th:href="@{/recuperar}" class="enlace-discreto">Pedir otro PIN</a>
+            <a th:href="@{/login}">Volver a iniciar sesión</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

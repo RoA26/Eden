@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Meta')}"></head>
+<body>
+<main class="contenido" th:with="esNueva=${idMeta == null}">
+    <p class="migas"><a th:href="@{/metas}">Metas</a></p>
+    <header class="encabezado">
+        <h1 th:text="${esNueva} ? 'Nueva meta' : 'Editar meta'">Nueva meta</h1>
+    </header>
+
+    <p class="vacio" th:if="${cajitas.isEmpty()}">
+        Necesitas al menos una cajita activa. <a th:href="@{/cajitas}">Crear cajita</a>
+    </p>
+
+    <form th:unless="${cajitas.isEmpty()}"
+          th:action="${esNueva} ? @{/metas/nueva} : @{/metas/{id}/editar(id=${idMeta})}"
+          th:object="${formulario}" method="post" class="formulario" novalidate>
+        <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" th:field="*{nombre}" maxlength="60" placeholder="Ej. Llantas nuevas"
+               th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+
+        <label for="montoObjetivo">¿Cuánto quieres reunir?</label>
+        <input id="montoObjetivo" type="text" inputmode="decimal" th:field="*{montoObjetivo}" class="entrada-monto"
+               th:classappend="${#fields.hasErrors('montoObjetivo')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('montoObjetivo')}" th:errors="*{montoObjetivo}"></p>
+
+        <label for="idCajita">Cajita donde ahorras</label>
+        <select id="idCajita" th:field="*{idCajita}">
+            <option th:each="c : ${cajitas}" th:value="${c.id}"
+                    th:text="${c.nombre} + ' (' + ${@formato.pesos(c.saldo)} + ')'">Daniela</option>
+        </select>
+        <p class="error-campo" th:if="${#fields.hasErrors('idCajita')}" th:errors="*{idCajita}"></p>
+
+        <label for="fechaObjetivo">Fecha objetivo (opcional)</label>
+        <input id="fechaObjetivo" type="date" th:field="*{fechaObjetivo}"
+               th:classappend="${#fields.hasErrors('fechaObjetivo')} ? 'con-error'">
+        <p class="ayuda">Con fecha, Eden calcula cuánto aportar cada mes.</p>
+        <p class="error-campo" th:if="${#fields.hasErrors('fechaObjetivo')}" th:errors="*{fechaObjetivo}"></p>
+
+        <button type="submit" class="boton boton-principal" th:text="${esNueva} ? 'Crear meta' : 'Guardar cambios'">Crear meta</button>
+        <a class="boton boton-claro" th:href="@{/metas}">Cancelar</a>
+    </form>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

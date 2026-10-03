@@ -1,0 +1,16 @@
+# PostgreSQL local para desarrollo: docker compose up -d
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: finanzas
+      POSTGRES_USER: finanzas
+      POSTGRES_PASSWORD: finanzas
+      TZ: America/Bogota
+    ports:
+      - "5432:5432"
+    volumes:
+      - datos_finanzas:/var/lib/postgresql/data
+volumes:
+  datos_finanzas:

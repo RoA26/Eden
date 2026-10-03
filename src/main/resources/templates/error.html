@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Error')}"></head>
+<body class="pagina-acceso">
+<div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
+<main class="acceso">
+    <header class="acceso-cabecera">
+        <img class="acceso-logo" th:src="@{/iconos/icono-192.png}" alt="" width="68" height="68">
+        <p class="acceso-marca" th:text="${nombreApp ?: 'Eden'}">Eden</p>
+    </header>
+    <section class="acceso-hoja">
+        <p class="error-codigo" th:text="${codigo ?: status}">404</p>
+        <h1 class="error-titulo" th:text="${mensaje ?: 'Ocurrió un error.'}">No encontramos lo que buscas.</h1>
+        <a class="boton boton-principal boton-bloque" th:href="@{/inicio}">Volver al inicio</a>
+    </section>
+</main>
+</body>
+</html>

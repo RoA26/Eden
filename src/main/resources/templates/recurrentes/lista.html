@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Recurrentes')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado encabezado-con-acciones">
+        <h1>Recurrentes</h1>
+        <a class="boton boton-claro boton-pequeno" th:href="@{/recurrentes/nuevo}">Nuevo recurrente</a>
+    </header>
+
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <p class="ayuda">Pagos o ingresos que se repiten (arriendo, SOAT, servicios). Eden te los recuerda en el inicio
+        unos días antes y tú confirmas el monto real; nunca se registran solos.</p>
+
+    <p class="vacio" th:if="${recurrentes.isEmpty()}">Aún no tienes recurrentes programados.</p>
+
+    <article class="tarjeta" th:each="r : ${recurrentes}" th:classappend="${!r.activo} ? 'inactiva'">
+        <div class="tarjeta-fila">
+            <h2 th:text="${r.nombre}">Arriendo</h2>
+            <strong th:classappend="${r.tipo.name() == 'INGRESO'} ? 'monto-ingreso' : 'monto-gasto'"
+                    th:text="${@formato.pesos(r.monto)}">$ 0</strong>
+        </div>
+        <p class="tarjeta-detalle">
+            <span th:text="${r.periodicidad.etiqueta}">Cada mes</span>
+            <span th:text="'Próximo: ' + ${@formato.fecha(r.proximaFecha)}"
+                  th:classappend="${r.activo and r.estaVencido(hoy)} ? 'monto-gasto'">Próximo: 1 oct</span>
+            <span th:text="${r.nombreCategoria}">Arriendo</span>
+            <span th:if="${r.nombreFuente}" th:text="${r.nombreFuente}"></span>
+            <span th:if="${r.nombreCajitaOrigen}" th:text="'Desde ' + ${r.nombreCajitaOrigen}"></span>
+            <span th:unless="${r.activo}">Pausado</span>
+        </p>
+        <div class="acciones-fila">
+            <a th:href="@{/recurrentes/{id}/editar(id=${r.id})}">Editar</a>
+            <form th:action="@{/recurrentes/{id}/estado(id=${r.id})}" method="post">
+                <input type="hidden" name="activo" th:value="${!r.activo}">
+                <button type="submit" class="enlace" th:text="${r.activo} ? 'Pausar' : 'Reanudar'">Pausar</button>
+            </form>
+            <form th:action="@{/recurrentes/{id}/eliminar(id=${r.id})}" method="post"
+                  data-confirmar="¿Eliminar este recurrente? Los movimientos ya registrados se conservan.">
+                <button type="submit" class="enlace-peligro">Eliminar</button>
+            </form>
+        </div>
+    </article>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

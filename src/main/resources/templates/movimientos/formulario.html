@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Movimiento')}"></head>
+<body>
+<main class="contenido" th:with="esIngreso=${formulario.tipo.name() == 'INGRESO'}, esNuevo=${idMovimiento == null}">
+    <header class="encabezado">
+        <h1 th:text="${esNuevo} ? (${esIngreso} ? 'Nuevo ingreso' : 'Nuevo gasto') : (${esIngreso} ? 'Editar ingreso' : 'Editar gasto')">Nuevo gasto</h1>
+    </header>
+
+    <nav class="pestanas" th:if="${esNuevo}" aria-label="Tipo de movimiento">
+        <a th:href="@{/movimientos/nuevo(tipo='GASTO')}" th:classappend="${!esIngreso} ? 'activa'">Gasto</a>
+        <a th:href="@{/movimientos/nuevo(tipo='INGRESO')}" th:classappend="${esIngreso} ? 'activa'">Ingreso</a>
+    </nav>
+
+    <form th:action="${esNuevo} ? @{/movimientos/nuevo} : @{/movimientos/{id}/editar(id=${idMovimiento})}"
+          th:object="${formulario}" method="post" class="formulario" novalidate>
+        <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+        <input type="hidden" th:field="*{tipo}">
+
+        <label for="monto">Monto</label>
+        <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" placeholder="Ej. 25.000" required
+               class="entrada-monto" th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
+
+        <label for="fecha">Fecha</label>
+        <input id="fecha" type="date" th:field="*{fecha}" required
+               th:classappend="${#fields.hasErrors('fecha')} ? 'con-error'">
+        <p class="error-campo" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></p>
+
+        <label for="idCategoria">Categoría</label>
+        <select id="idCategoria" th:field="*{idCategoria}" th:classappend="${#fields.hasErrors('idCategoria')} ? 'con-error'">
+            <th:block th:if="${esIngreso}">
+                <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}">Producido</option>
+            </th:block>
+            <th:block th:unless="${esIngreso}">
+                <optgroup label="Gastos personales">
+                    <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}">Alimentación</option>
+                </optgroup>
+                <optgroup label="Costos operativos (de una fuente)">
+                    <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
+                </optgroup>
+            </th:block>
+        </select>
+        <p class="error-campo" th:if="${#fields.hasErrors('idCategoria')}" th:errors="*{idCategoria}"></p>
+
+        <label for="idFuente">Fuente</label>
+        <select id="idFuente" th:field="*{idFuente}" th:classappend="${#fields.hasErrors('idFuente')} ? 'con-error'">
+            <option value="">Ninguna</option>
+            <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
+        </select>
+        <p class="ayuda" th:unless="${esIngreso}">Obligatoria solo para costos operativos.</p>
+        <p class="error-campo" th:if="${#fields.hasErrors('idFuente')}" th:errors="*{idFuente}"></p>
+
+        <th:block th:if="${esNuevo and !esIngreso and !cajitas.isEmpty()}">
+            <label for="idCajitaOrigen">Pagado desde</label>
+            <select id="idCajitaOrigen" th:field="*{idCajitaOrigen}"
+                    th:classappend="${#fields.hasErrors('idCajitaOrigen')} ? 'con-error'">
+                <option value="">El disponible</option>
+                <option th:each="c : ${cajitas}" th:value="${c.id}"
+                        th:text="${c.nombre} + ' (' + ${@formato.pesos(c.saldo)} + ')'">Atenea</option>
+            </select>
+            <p class="error-campo" th:if="${#fields.hasErrors('idCajitaOrigen')}" th:errors="*{idCajitaOrigen}"></p>
+        </th:block>
+
+        <label for="descripcion">Descripción (opcional)</label>
+        <input id="descripcion" type="text" th:field="*{descripcion}" maxlength="200">
+        <p class="error-campo" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></p>
+
+        <button type="submit" class="boton boton-principal" th:text="${esNuevo} ? 'Guardar' : 'Guardar cambios'">Guardar</button>
+        <a class="boton boton-claro" th:href="@{/movimientos}">Cancelar</a>
+    </form>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('movimientos')}"></nav>
+</body>
+</html>

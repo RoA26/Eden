@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Presupuestos')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado encabezado-mes-nav">
+        <a class="boton boton-claro boton-pequeno" th:href="@{/presupuestos(mes=${mes.minusMonths(1)})}" aria-label="Mes anterior">‹</a>
+        <h1 th:text="${@formato.mes(mes)}">septiembre 2026</h1>
+        <a class="boton boton-claro boton-pequeno" th:unless="${esMesActual}"
+           th:href="@{/presupuestos(mes=${mes.plusMonths(1)})}" aria-label="Mes siguiente">›</a>
+        <span th:if="${esMesActual}" class="espaciador"></span>
+    </header>
+
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <dl class="cifras" th:unless="${presupuestos.isEmpty()}">
+        <div><dt>Presupuestado</dt><dd th:text="${@formato.pesos(totalPresupuestado)}">$ 0</dd></div>
+        <div><dt>Gastado</dt><dd class="monto-gasto" th:text="${@formato.pesos(totalGastado)}">$ 0</dd></div>
+    </dl>
+
+    <section class="bloque">
+        <p class="vacio" th:if="${presupuestos.isEmpty()}">
+            Define un tope mensual para las categorías que quieras vigilar. Eden te avisará en el inicio al pasar el 80%.
+        </p>
+        <div class="presupuesto" th:each="p : ${presupuestos}">
+            <div class="tarjeta-fila">
+                <strong th:text="${p.categoria()}">Alimentación</strong>
+                <span th:text="${@formato.pesos(p.gastado())} + ' de ' + ${@formato.pesos(p.presupuestado())}">$ 0 de $ 0</span>
+            </div>
+            <progress max="100" th:value="${p.porcentajeBarra()}" th:text="${p.porcentaje()} + '%'"
+                      th:class="${p.excedido()} ? 'barra barra-excedida' : (${p.enAlerta()} ? 'barra barra-alerta' : 'barra')"></progress>
+            <div class="tarjeta-fila nota">
+                <span th:text="${p.excedido()} ? 'Excedido en ' + ${@formato.pesos(p.restante().negate())}
+                                             : 'Quedan ' + ${@formato.pesos(p.restante())}">Quedan $ 0</span>
+                <form th:action="@{/presupuestos/{id}/eliminar(id=${p.idPresupuesto()})}" method="post"
+                      data-confirmar="¿Eliminar este presupuesto?">
+                    <button type="submit" class="enlace-peligro">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="bloque">
+        <h2>Definir o cambiar un presupuesto</h2>
+        <form th:action="@{/presupuestos}" th:object="${formulario}" method="post" class="formulario" novalidate>
+            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+            <label for="idCategoria">Categoría</label>
+            <select id="idCategoria" th:field="*{idCategoria}">
+                <optgroup label="Gastos personales">
+                    <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}">Alimentación</option>
+                </optgroup>
+                <optgroup label="Costos operativos">
+                    <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
+                </optgroup>
+            </select>
+            <p class="error-campo" th:if="${#fields.hasErrors('idCategoria')}" th:errors="*{idCategoria}"></p>
+
+            <label for="monto">Tope mensual</label>
+            <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" class="entrada-monto"
+                   th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
+            <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
+            <p class="ayuda">Si la categoría ya tiene presupuesto, se reemplaza el monto.</p>
+
+            <button type="submit" class="boton boton-principal">Guardar presupuesto</button>
+        </form>
+    </section>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

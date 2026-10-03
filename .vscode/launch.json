@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Eden (dev)",
+            "request": "launch",
+            "mainClass": "com.eden.EdenApplication",
+            "projectName": "eden",
+            "vmArgs": "-Dspring.profiles.active=dev"
+        }
+    ]
+}

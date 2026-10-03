@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Más')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado"><h1>Más</h1></header>
+
+    <section class="bloque" th:unless="${cuentasCompartidas.isEmpty()}">
+        <h2>Cuentas compartidas contigo</h2>
+        <nav class="menu">
+            <a th:each="a : ${cuentasCompartidas}" th:href="@{/compartido/{id}/inicio(id=${a.idTitular()})}">
+                <strong th:text="${a.nombreCompletoTitular()}">Papá</strong><span>Ver su cuenta (solo lectura)</span>
+            </a>
+        </nav>
+    </section>
+
+    <section class="bloque">
+        <h2>Mi dinero</h2>
+        <nav class="menu" aria-label="Mi dinero">
+            <a th:href="@{/cajitas}"><strong>Cajitas</strong><span>Saldos, aportes y reparto del disponible</span></a>
+            <a th:href="@{/metas}"><strong>Metas</strong><span>Lo que estás ahorrando y cuánto falta</span></a>
+            <a th:href="@{/presupuestos}"><strong>Presupuestos</strong><span>Topes mensuales por categoría</span></a>
+            <a th:href="@{/recurrentes}"><strong>Recurrentes</strong><span>Arriendo, SOAT, servicios y otros pagos fijos</span></a>
+        </nav>
+    </section>
+
+    <section class="bloque">
+        <h2>Registrar</h2>
+        <nav class="menu" aria-label="Registrar">
+            <a th:href="@{/movimientos/nuevo(tipo='GASTO')}"><strong>Un gasto</strong><span>Personal o costo de una fuente</span></a>
+            <a th:href="@{/movimientos/nuevo(tipo='INGRESO')}"><strong>Otro ingreso</strong><span>Salario, ventas u otros ingresos</span></a>
+        </nav>
+    </section>
+
+    <section class="bloque">
+        <h2>Configuración</h2>
+        <nav class="menu" aria-label="Configuración">
+            <a th:href="@{/fuentes}"><strong>Fuentes de ingreso</strong><span>Motocarro y otras fuentes</span></a>
+            <a th:href="@{/categorias}"><strong>Categorías</strong><span>Ingresos, gastos y costos operativos</span></a>
+            <a th:href="@{/compartir}"><strong>Compartir mi cuenta</strong><span>Acceso de solo lectura para otra persona</span></a>
+        </nav>
+    </section>
+
+    <form th:action="@{/logout}" method="post" class="salir">
+        <button type="submit" class="boton boton-claro">Cerrar sesión</button>
+    </form>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Inicio')}"></head>
+<body>
+<main class="contenido" th:with="t=${tablero}">
+    <header class="encabezado">
+        <p class="encabezado-saludo" th:text="'Hola, ' + ${nombreCompleto}">Hola, Roger</p>
+        <p class="encabezado-mes" th:text="${t.nombreMes()}">septiembre 2026</p>
+    </header>
+
+    <div th:replace="~{fragmentos/base :: bannerCompartido}"></div>
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <section class="bloque recordatorios" th:unless="${t.pendientes().isEmpty()}">
+        <h2>Por confirmar</h2>
+        <article class="tarjeta recordatorio" th:each="r : ${t.pendientes()}"
+                 th:classappend="${r.estaVencido(t.hoy())} ? 'recordatorio-vencido'">
+            <div class="tarjeta-fila">
+                <h3 th:text="${r.nombre}">Arriendo</h3>
+                <strong th:classappend="${r.tipo.name() == 'INGRESO'} ? 'monto-ingreso' : 'monto-gasto'"
+                        th:text="${@formato.pesos(r.monto)}">$ 0</strong>
+            </div>
+            <p class="tarjeta-detalle">
+                <span th:text="${@formato.fecha(r.proximaFecha)}">1 oct</span>
+                <span th:text="${r.nombreCategoria}">Arriendo</span>
+                <span th:if="${r.nombreCajitaOrigen}" th:text="'Desde ' + ${r.nombreCajitaOrigen}"></span>
+            </p>
+            <div class="recordatorio-acciones" th:unless="${soloLectura}">
+                <form th:action="@{/recurrentes/{id}/confirmar(id=${r.id})}" method="post" class="en-linea">
+                    <input type="hidden" name="volver" value="/inicio">
+                    <input type="text" name="monto" inputmode="decimal" class="entrada-monto"
+                           th:value="${@formato.entero(r.monto)}" aria-label="Monto real">
+                    <button type="submit" class="boton boton-principal boton-pequeno">Confirmar</button>
+                </form>
+                <form th:action="@{/recurrentes/{id}/omitir(id=${r.id})}" method="post"
+                      data-confirmar="¿Omitir este periodo sin registrar nada?">
+                    <input type="hidden" name="volver" value="/inicio">
+                    <button type="submit" class="enlace">Omitir este periodo</button>
+                </form>
+            </div>
+        </article>
+    </section>
+
+    <section class="disponible">
+        <p class="disponible-etiqueta">Disponible por repartir</p>
+        <p class="disponible-monto" th:text="${@formato.pesos(t.disponible())}">$ 0</p>
+        <div class="acciones" th:unless="${soloLectura}">
+            <a class="boton boton-principal" th:href="@{/registrar}">Registrar producido</a>
+            <a class="boton boton-claro" th:if="${t.disponible().signum() > 0}" th:href="@{/cajitas/repartir}">Repartir</a>
+        </div>
+    </section>
+
+    <section class="bloque">
+        <h2>Este mes</h2>
+        <dl class="cifras">
+            <div><dt>Ingresos</dt><dd class="monto-ingreso" th:text="${@formato.pesos(t.mesActual().ingresos())}">$ 0</dd></div>
+            <div><dt>Gastos personales</dt><dd class="monto-gasto" th:text="${@formato.pesos(t.mesActual().gastosPersonales())}">$ 0</dd></div>
+            <div><dt>Costos operativos</dt><dd class="monto-gasto" th:text="${@formato.pesos(t.mesActual().costosOperativos())}">$ 0</dd></div>
+            <div><dt>Balance</dt>
+                <dd th:classappend="${t.mesActual().balancePositivo()} ? 'monto-ingreso' : 'monto-gasto'"
+                    th:text="${@formato.pesos(t.mesActual().balance())}">$ 0</dd></div>
+        </dl>
+        <p class="nota" th:text="'Balance del mes anterior: ' + ${@formato.pesos(t.mesAnterior().balance())}"></p>
+    </section>
+
+    <section class="bloque" th:unless="${t.alertasPresupuesto().isEmpty()}">
+        <div class="bloque-encabezado">
+            <h2>Presupuestos en alerta</h2>
+            <a th:unless="${soloLectura}" th:href="@{/presupuestos}">Ver todos</a>
+        </div>
+        <div class="presupuesto" th:each="p : ${t.alertasPresupuesto()}">
+            <div class="tarjeta-fila">
+                <span th:text="${p.categoria()}">Alimentación</span>
+                <span th:text="${@formato.pesos(p.gastado())} + ' de ' + ${@formato.pesos(p.presupuestado())}">$ 0 de $ 0</span>
+            </div>
+            <progress max="100" th:value="${p.porcentajeBarra()}"
+                      th:class="${p.excedido()} ? 'barra barra-excedida' : 'barra barra-alerta'"
+                      th:text="${p.porcentaje()} + '%'"></progress>
+        </div>
+    </section>
+
+    <section class="bloque" th:unless="${t.metas().isEmpty()}">
+        <div class="bloque-encabezado">
+            <h2>Metas</h2>
+            <a th:unless="${soloLectura}" th:href="@{/metas}">Ver todas</a>
+        </div>
+        <div class="presupuesto" th:each="pm : ${t.metas()}">
+            <div class="tarjeta-fila">
+                <span th:text="${pm.meta().nombre}">Moto nueva</span>
+                <span th:text="${pm.porcentaje()} + '%'">40%</span>
+            </div>
+            <progress class="barra" max="100" th:value="${pm.porcentaje()}" th:text="${pm.porcentaje()} + '%'"></progress>
+            <p class="nota" th:if="${pm.cumplida()}">¡Meta cumplida!</p>
+            <p class="nota" th:if="${!pm.cumplida() and pm.aporteMensual() != null}"
+               th:text="'Aporta ' + ${@formato.pesos(pm.aporteMensual())} + ' al mes para llegar a tiempo.'"></p>
+        </div>
+    </section>
+
+    <section class="bloque">
+        <div class="bloque-encabezado">
+            <h2>Fuentes</h2>
+            <a th:unless="${soloLectura}" th:href="@{/fuentes}">Administrar</a>
+        </div>
+        <p class="vacio" th:if="${t.fuentes().isEmpty() and !soloLectura}">
+            Crea tu primera fuente de ingreso, por ejemplo el motocarro, para registrar su producido diario.
+            <a th:href="@{/fuentes}">Crear fuente</a>
+        </p>
+        <article class="tarjeta" th:each="f : ${t.fuentes()}">
+            <h3 th:text="${f.nombre()}">Motocarro</h3>
+            <dl class="cifras cifras-compactas">
+                <div><dt>Bruto</dt><dd th:text="${@formato.pesos(f.bruto())}">$ 0</dd></div>
+                <div><dt>Costos</dt><dd class="monto-gasto" th:text="${@formato.pesos(f.costos())}">$ 0</dd></div>
+                <div><dt>Utilidad</dt><dd class="monto-ingreso" th:text="${@formato.pesos(f.utilidad())}">$ 0</dd></div>
+                <div><dt>Días trabajados</dt><dd th:text="${f.diasTrabajados()}">0</dd></div>
+                <div><dt>Promedio por día</dt><dd th:text="${@formato.pesos(f.promedioDiario())}">$ 0</dd></div>
+                <div><dt>Margen</dt><dd th:text="${f.margen() != null} ? ${f.margen()} + '%' : '—'">—</dd></div>
+            </dl>
+        </article>
+    </section>
+
+    <section class="bloque" th:unless="${t.sinMovimientos()}">
+        <h2>Gráficas</h2>
+        <figure class="grafica">
+            <figcaption>Producido diario del mes</figcaption>
+            <div class="grafica-lienzo"><canvas id="grafica-producido" aria-label="Producido diario del mes"></canvas></div>
+        </figure>
+        <figure class="grafica">
+            <figcaption>Ingresos y gastos, últimos 6 meses</figcaption>
+            <div class="grafica-lienzo"><canvas id="grafica-meses" aria-label="Ingresos y gastos por mes"></canvas></div>
+        </figure>
+        <figure class="grafica" th:unless="${t.datosGraficas().get('categorias').isEmpty()}">
+            <figcaption>Gastos del mes por categoría</figcaption>
+            <div class="grafica-lienzo"><canvas id="grafica-categorias" aria-label="Gastos por categoría"></canvas></div>
+        </figure>
+        <script id="datos-graficas" type="application/json" th:inline="javascript">/*[[${t.datosGraficas()}]]*/ null</script>
+    </section>
+
+    <section class="bloque">
+        <div class="bloque-encabezado">
+            <h2>Cajitas</h2>
+            <a th:unless="${soloLectura}" th:href="@{/cajitas}">Ver todas</a>
+        </div>
+        <p class="vacio" th:if="${t.cajitas().isEmpty() and !soloLectura}">
+            Crea tus cajitas (Daniela, Atenea, Emergencia, Chelas...) para repartir tu dinero.
+            <a th:href="@{/cajitas}">Crear cajita</a>
+        </p>
+        <a class="fila-cajita" th:each="c : ${t.cajitas()}"
+           th:href="${soloLectura} ? '#' : @{/cajitas/{id}(id=${c.id})}">
+            <span class="fila-cajita-nombre" th:text="${c.nombre}">Daniela</span>
+            <span class="fila-cajita-saldo" th:text="${@formato.pesos(c.saldo)}">$ 0</span>
+        </a>
+        <p class="total-cajitas" th:unless="${t.cajitas().isEmpty()}">
+            <span>Total ahorrado</span>
+            <strong th:text="${@formato.pesos(t.totalCajitas())}">$ 0</strong>
+        </p>
+    </section>
+
+    <section class="bloque">
+        <div class="bloque-encabezado">
+            <h2>Últimos movimientos</h2>
+            <a th:href="@{${baseRuta + '/movimientos'}}">Ver todos</a>
+        </div>
+        <p class="vacio" th:if="${t.sinMovimientos()}">
+            Aún no hay movimientos. Tu primer producido del día aparecerá aquí.
+        </p>
+        <th:block th:each="m : ${t.ultimosMovimientos()}">
+            <article th:replace="~{fragmentos/base :: filaMovimiento(${m}, ${baseRuta + '/inicio'})}"></article>
+        </th:block>
+    </section>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('inicio')}"></nav>
+<script th:src="@{/js/vendor/chart.umd.js}" defer></script>
+<script th:src="@{/js/tablero.js}" defer></script>
+</body>
+</html>

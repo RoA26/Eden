@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Iniciar sesión')}"></head>
+<body class="pagina-acceso">
+<div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
+<main class="acceso">
+    <header class="acceso-cabecera">
+        <img class="acceso-logo" th:src="@{/iconos/icono-192.png}" alt="" width="68" height="68">
+        <h1 class="acceso-marca" th:text="${nombreApp}">Eden</h1>
+        <p class="acceso-lema">Lo que entra, lo que sale y lo que guardas.</p>
+    </header>
+
+    <section class="acceso-hoja" aria-labelledby="titulo-login">
+        <h2 id="titulo-login" class="acceso-titulo">Hola de nuevo</h2>
+
+        <p th:if="${mensaje}" class="aviso aviso-exito" role="status" th:text="${mensaje}"></p>
+        <p th:if="${param.salida}" class="aviso" role="status">Cerraste sesión.</p>
+        <p th:if="${param.error}" class="aviso aviso-error" role="alert">
+            Usuario o contraseña incorrectos. Revisa los datos e intenta de nuevo.
+        </p>
+
+        <form th:action="@{/login}" method="post" class="formulario-acceso">
+            <div class="campo-flotante">
+                <input id="nombreUsuario" name="nombreUsuario" type="text" placeholder=" "
+                       autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"
+                       enterkeyhint="next" required>
+                <label for="nombreUsuario">Usuario</label>
+            </div>
+
+            <div class="campo-flotante campo-contrasena">
+                <input id="contrasena" name="contrasena" type="password" placeholder=" "
+                       autocomplete="current-password" enterkeyhint="go" required>
+                <label for="contrasena">Contraseña</label>
+                <button type="button" class="ver-contrasena" data-alternar-contrasena="contrasena"
+                        aria-label="Mostrar contraseña" aria-pressed="false">Ver</button>
+            </div>
+
+            <label class="interruptor">
+                <span>Mantener la sesión en este dispositivo</span>
+                <input type="checkbox" name="recordarme" checked>
+            </label>
+
+            <button type="submit" class="boton boton-principal boton-bloque">Iniciar sesión</button>
+        </form>
+
+        <div class="acceso-enlaces">
+            <a th:href="@{/recuperar}" class="enlace-discreto">¿Olvidaste tu contraseña?</a>
+            <p class="acceso-alterno">¿No tienes cuenta? <a th:href="@{/registro}">Crear cuenta</a></p>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+.vscode/*
+!.vscode/launch.json
+.env
+respaldos/
+*.log

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Fuentes de ingreso')}"></head>
+<body>
+<main class="contenido">
+    <header class="encabezado"><h1>Fuentes de ingreso</h1></header>
+
+    <div th:replace="~{fragmentos/base :: avisos}"></div>
+
+    <section class="bloque">
+        <p class="vacio" th:if="${fuentes.isEmpty()}">Aún no tienes fuentes. Crea la primera abajo.</p>
+        <article class="tarjeta" th:each="f : ${fuentes}" th:classappend="${!f.activa} ? 'inactiva'">
+            <form th:action="@{/fuentes/{id}(id=${f.id})}" method="post" class="formulario-en-linea">
+                <div class="en-linea">
+                    <input type="text" name="nombre" th:value="${f.nombre}" maxlength="60" aria-label="Nombre de la fuente" required>
+                    <select name="frecuencia" aria-label="Frecuencia">
+                        <option th:each="fr : ${frecuencias}" th:value="${fr}" th:text="${fr.etiqueta}"
+                                th:selected="${fr == f.frecuencia}">Diaria</option>
+                    </select>
+                    <button type="submit" class="boton boton-claro boton-pequeno">Guardar</button>
+                </div>
+            </form>
+            <form th:action="@{/fuentes/{id}/estado(id=${f.id})}" method="post" class="formulario-accion">
+                <input type="hidden" name="activa" th:value="${!f.activa}">
+                <button type="submit" class="enlace" th:text="${f.activa} ? 'Desactivar' : 'Activar'">Desactivar</button>
+            </form>
+        </article>
+    </section>
+
+    <section class="bloque">
+        <h2>Nueva fuente</h2>
+        <form th:action="@{/fuentes}" th:object="${formulario}" method="post" class="formulario" novalidate>
+            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+            <label for="nombre">Nombre</label>
+            <input id="nombre" type="text" th:field="*{nombre}" maxlength="60" placeholder="Ej. Motocarro"
+                   th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
+            <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+
+            <label for="frecuencia">¿Cada cuánto recibes este ingreso?</label>
+            <select id="frecuencia" th:field="*{frecuencia}">
+                <option th:each="fr : ${frecuencias}" th:value="${fr}" th:text="${fr.etiqueta}">Diaria</option>
+            </select>
+
+            <button type="submit" class="boton boton-principal">Crear fuente</button>
+        </form>
+    </section>
+</main>
+<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+</body>
+</html>

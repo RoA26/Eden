@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/base :: cabecera('Crear cuenta')}"></head>
+<body class="pagina-acceso">
+<div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
+<main class="acceso">
+    <header class="acceso-cabecera">
+        <img class="acceso-logo" th:src="@{/iconos/icono-192.png}" alt="" width="68" height="68">
+        <h1 class="acceso-marca" th:text="${nombreApp}">Eden</h1>
+        <p class="acceso-lema">Crea tu cuenta con el código que te compartieron.</p>
+    </header>
+
+    <section class="acceso-hoja" aria-labelledby="titulo-registro">
+        <h2 id="titulo-registro" class="acceso-titulo">Crear cuenta</h2>
+
+        <form th:action="@{/registro}" th:object="${formulario}" method="post" class="formulario-acceso" novalidate>
+            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert"
+               th:text="${#fields.globalErrors()[0]}"></p>
+
+            <div class="campo-flotante">
+                <input id="nombreCompleto" type="text" th:field="*{nombreCompleto}" placeholder=" "
+                       autocomplete="name" autocapitalize="words" enterkeyhint="next" maxlength="100" required
+                       th:classappend="${#fields.hasErrors('nombreCompleto')} ? 'con-error'">
+                <label for="nombreCompleto">Tu nombre</label>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></p>
+
+            <div class="campo-flotante">
+                <input id="nombreUsuario" type="text" th:field="*{nombreUsuario}" placeholder=" "
+                       autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"
+                       enterkeyhint="next" maxlength="30" required
+                       th:classappend="${#fields.hasErrors('nombreUsuario')} ? 'con-error'">
+                <label for="nombreUsuario">Usuario (sin espacios)</label>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}"></p>
+
+            <!-- Las contrasenas no usan th:field para no devolver su valor a la vista -->
+            <div class="campo-flotante campo-contrasena">
+                <input id="contrasena" name="contrasena" type="password" placeholder=" "
+                       autocomplete="new-password" enterkeyhint="next" minlength="8" maxlength="72" required
+                       th:classappend="${#fields.hasErrors('contrasena')} ? 'con-error'">
+                <label for="contrasena">Contraseña (mínimo 8)</label>
+                <button type="button" class="ver-contrasena" data-alternar-contrasena="contrasena"
+                        aria-label="Mostrar contraseña" aria-pressed="false">Ver</button>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}"></p>
+
+            <div class="campo-flotante campo-contrasena">
+                <input id="confirmacionContrasena" name="confirmacionContrasena" type="password" placeholder=" "
+                       autocomplete="new-password" enterkeyhint="next" maxlength="72" required
+                       th:classappend="${#fields.hasErrors('confirmacionContrasena')} ? 'con-error'">
+                <label for="confirmacionContrasena">Repite la contraseña</label>
+                <button type="button" class="ver-contrasena" data-alternar-contrasena="confirmacionContrasena"
+                        aria-label="Mostrar contraseña" aria-pressed="false">Ver</button>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('confirmacionContrasena')}" th:errors="*{confirmacionContrasena}"></p>
+
+            <div class="campo-flotante">
+                <input id="codigoInvitacion" name="codigoInvitacion" type="text" placeholder=" "
+                       autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
+                       enterkeyhint="done" required
+                       th:classappend="${#fields.hasErrors('codigoInvitacion')} ? 'con-error'">
+                <label for="codigoInvitacion">Código de invitación</label>
+            </div>
+            <p class="error-campo" th:if="${#fields.hasErrors('codigoInvitacion')}" th:errors="*{codigoInvitacion}"></p>
+
+            <button type="submit" class="boton boton-principal boton-bloque">Crear cuenta</button>
+        </form>
+
+        <div class="acceso-enlaces">
+            <p class="acceso-alterno">¿Ya tienes cuenta? <a th:href="@{/login}">Iniciar sesión</a></p>
+        </div>
+    </section>
+</main>
+</body>
+</html>
