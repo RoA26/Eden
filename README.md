@@ -20,9 +20,15 @@ com.eden
 
 ## Interfaz ("Cozy Fintech", V6)
 
-Oscura y móvil primero: en escritorio el contenido vive en un marco central
-del ancho de un teléfono. Sin barra inferior: la hamburguesa abre un menú
-lateral sobre un fondo oscurecido y desenfocado.
+Oscura y móvil primero, sin barra inferior. En el teléfono la hamburguesa
+abre un menú lateral sobre un fondo oscurecido y desenfocado; desde `md` el
+contenido es fluido y desde `lg` el menú es una barra lateral fija y el tablero
+se organiza en una rejilla de panel de control.
+
+- **Landing pública** (`/`, plantilla `bienvenida.html`): presentación comercial;
+  quien ya tiene sesión va directo a `/inicio`.
+- **Producido del día**: modal-calculadora (teclado numérico grande) para la
+  fuente principal activa; no exige crear una fuente antes.
 
 - **HTML**: Thymeleaf. Fragmentos reutilizables en `templates/fragmentos/`:
   `base` (`<head>`), `navegacion` (cabecera y menú lateral), `componentes`

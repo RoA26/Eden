@@ -45,14 +45,23 @@
     [x-cloak] { display: none !important; }
 
     /* ---------- Estructura ---------- */
+    /* Movil: una columna de ancho de telefono. Desde md el contenedor es
+       fluido (w-full); desde lg el menu se vuelve una barra lateral fija. */
     .marco {
-        @apply relative mx-auto flex min-h-screen w-full max-w-md flex-col;
+        @apply relative mx-auto flex min-h-screen w-full max-w-md flex-col md:max-w-none lg:pl-64;
         min-height: 100dvh;
     }
-    @screen md {
-        .marco { @apply border-x border-borde bg-fondo shadow-suave; }
+    .contenido {
+        @apply mx-auto flex w-full flex-1 flex-col gap-7 px-5 pb-24 pt-2 md:px-8 lg:max-w-4xl lg:px-10 lg:pb-16 lg:pt-6;
     }
-    .contenido { @apply flex-1 space-y-7 px-5 pb-24 pt-2; }
+    /* Tablero: panel de control a todo el ancho, en rejilla desde lg */
+    .contenido-panel { @apply lg:grid lg:max-w-none lg:grid-cols-3 lg:items-start lg:gap-6 2xl:px-14; }
+    .columna-panel { @apply contents lg:flex lg:flex-col lg:gap-6; }
+
+    /* Barra lateral fija de escritorio */
+    .barra-lateral {
+        @apply fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-borde bg-fondo-panel/60 backdrop-blur-xl lg:flex;
+    }
 
     .barra-superior {
         @apply sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-transparent bg-fondo/75 px-4 backdrop-blur-xl;
@@ -84,7 +93,9 @@
         @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold
                transition duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60;
     }
-    .boton-principal { @apply bg-esmeralda text-[#03231A] shadow-brillo hover:bg-esmeralda-claro; }
+    /* Texto casi negro sobre esmeralda: contraste AA (7:1). Nunca texto verde sobre este fondo. */
+    .boton-principal { @apply bg-esmeralda text-gray-900 shadow-brillo hover:bg-esmeralda-claro hover:text-gray-900; }
+    .boton-grande { @apply rounded-2xl px-6 py-4 text-base; }
     .boton-claro { @apply border border-borde-fuerte bg-white/[0.04] text-tinta hover:bg-white/[0.08]; }
     .boton-peligro { @apply border border-coral/25 bg-coral/10 text-coral-claro hover:bg-coral/20; }
     .boton-pequeno { @apply rounded-lg px-3 py-2 text-xs; }
@@ -148,7 +159,7 @@
     .aviso-error { @apply border-coral/25 bg-coral/10 text-coral-claro; }
 
     .vacio { @apply rounded-2xl border border-dashed border-borde-fuerte px-5 py-6 text-center text-sm text-tinta-suave; }
-    .vacio a { @apply font-semibold text-esmeralda; }
+    .vacio a:not(.boton) { @apply font-semibold text-esmeralda; }
 
     /* ---------- Montos ---------- */
     .monto-ingreso { @apply text-esmeralda; }
@@ -225,7 +236,7 @@
     .fila-edicion input[type="text"] { @apply campo py-2 text-sm; }
 
     .acciones-fila { @apply mt-3 flex flex-wrap items-center gap-4 border-t border-borde pt-3 text-sm; }
-    .acciones-fila a { @apply font-semibold text-tinta-suave hover:text-tinta; }
+    .acciones-fila a:not(.boton) { @apply font-semibold text-tinta-suave hover:text-tinta; }
 
     /* Menu de navegacion en lista (pagina Mas, menu lateral) */
     .menu { @apply lista; }
@@ -261,7 +272,7 @@
 
     /* Cuenta compartida (solo lectura) */
     .banner-compartido { @apply tarjeta space-y-3 border-ambar/20 bg-ambar/[0.06] text-sm; }
-    .banner-compartido > a { @apply enlace text-xs; }
+    .banner-compartido > a:not(.boton) { @apply enlace text-xs; }
 
     /* ---------- Calendario ---------- */
     .calendario { @apply tarjeta p-2.5; }
@@ -357,11 +368,41 @@
                before:transition checked:bg-esmeralda checked:before:translate-x-5;
     }
     .acceso-enlaces { @apply mt-5 flex flex-col items-center gap-2 text-sm; }
-    .acceso-enlaces a { @apply font-semibold text-esmeralda hover:text-esmeralda-claro; }
+    .acceso-enlaces a:not(.boton) { @apply font-semibold text-esmeralda hover:text-esmeralda-claro; }
     .acceso-enlaces .enlace-discreto, .acceso-alterno { @apply font-normal text-tinta-suave; }
     .error-codigo { @apply text-6xl font-extrabold tabular-nums text-esmeralda/80; }
     .error-titulo { @apply mb-6 mt-2 text-lg font-semibold; }
 
+    /* ---------- Calculadora del producido ---------- */
+    .calculadora-pantalla {
+        @apply w-full border-0 bg-transparent p-0 text-center text-5xl font-extrabold tabular-nums tracking-tight text-tinta
+               placeholder:text-tinta-tenue focus:outline-none focus:ring-0;
+    }
+    .teclado { @apply grid grid-cols-3 gap-2; }
+    .tecla {
+        @apply grid h-14 place-items-center rounded-2xl border border-borde bg-white/[0.04] text-xl font-semibold tabular-nums
+               text-tinta transition hover:bg-white/[0.08] active:scale-95 active:bg-white/[0.12];
+    }
+    .tecla-suave { @apply text-base text-tinta-suave; }
+    .chip-opcion { @apply chip cursor-pointer transition hover:border-borde-fuerte hover:text-tinta; }
+    .chip-opcion-activa { @apply border-esmeralda/40 bg-esmeralda/10 text-esmeralda-claro hover:text-esmeralda-claro; }
+
+    /* ---------- Landing publica ---------- */
+    .landing-contenedor { @apply mx-auto w-full max-w-6xl px-5 md:px-8; }
+    .boton-fantasma { @apply boton text-tinta-suave hover:bg-white/[0.05] hover:text-tinta; }
+    .tarjeta-flotante {
+        @apply rounded-2xl border border-white/10 bg-fondo-panel/80 p-4 shadow-suave backdrop-blur-md;
+        animation: flotar-suave 7s ease-in-out infinite;
+    }
+    .tarjeta-flotante-lenta { animation-duration: 9s; animation-delay: -3s; }
+    @keyframes flotar-suave {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .tarjeta-flotante, .nubes span { animation: none; }
+    }
+
     /* ---------- Graficas ---------- */
-    .grafica-lienzo { @apply relative h-56 w-full; }
+    .grafica-lienzo { @apply relative h-56 w-full lg:h-72; }
 }

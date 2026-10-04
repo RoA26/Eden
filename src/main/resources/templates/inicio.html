@@ -5,268 +5,275 @@
 <div class="marco" th:with="t=${tablero}, propia=${!soloLectura}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion(${soloLectura} ? ${nombreTitular} : 'Inicio', 'inicio')}"></th:block>
 
-    <main class="contenido">
+    <main class="contenido contenido-panel">
         <div th:replace="~{fragmentos/componentes :: bannerCompartido}"></div>
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-        <!-- ============================================================ Saldo total -->
-        <section class="pt-3" aria-labelledby="titulo-saldo">
-            <p class="text-sm text-tinta-suave">
-                <span th:text="'Hola, ' + ${nombreCompleto}">Hola, Roger</span>
-                <span class="text-tinta-tenue" th:text="'· ' + ${t.nombreMes()}">· septiembre 2026</span>
-            </p>
-            <h2 id="titulo-saldo" class="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-tinta-tenue">Saldo total</h2>
-            <p class="saldo-hero mt-2" data-cifra="total" data-pulso
-               th:attr="data-valor=${t.saldoTotal()}" th:text="${@formato.pesos(t.saldoTotal())}">$ 1.250.000</p>
-            <div class="mt-4 flex flex-wrap gap-2">
-                <span class="chip">Por repartir
-                    <strong data-cifra="disponible" th:attr="data-valor=${t.disponible()}"
-                            th:text="${@formato.pesos(t.disponible())}">$ 0</strong></span>
-                <span class="chip">En cajitas
-                    <strong data-cifra="enCajitas" th:attr="data-valor=${t.totalCajitas()}"
-                            th:text="${@formato.pesos(t.totalCajitas())}">$ 0</strong></span>
-            </div>
-        </section>
-
-        <!-- ============================================================ Friccion cero -->
-        <section th:fragment="atajos" th:unless="${soloLectura}" id="seccion-atajos" th:attr="data-parcial=@{/inicio/parcial/atajos}"
-                 x-data="seccionAtajos" aria-labelledby="titulo-atajos">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-atajos" class="seccion-titulo">Registro rápido</h2>
-                <button type="button" class="seccion-enlace" th:unless="${atajos.isEmpty()}" @click="alternarEdicion"
-                        x-text="editando ? 'Listo' : 'Editar'">Editar</button>
-            </div>
-            <div class="grid grid-cols-2 gap-3 min-[400px]:grid-cols-3">
-                <th:block th:each="a : ${atajos}">
-                    <div th:replace="~{fragmentos/componentes :: botonRapido(${a})}"></div>
-                </th:block>
-                <a th:href="@{/registrar}" class="rapido-nuevo" @click.prevent="$store.ui.abrirModal('atajo')">
-                    <svg th:replace="~{fragmentos/componentes :: icono('mas')}"></svg>
-                    <span th:text="${atajos.isEmpty()} ? 'Crea tu primer botón' : 'Nuevo botón'">Nuevo botón</span>
-                </a>
-            </div>
-            <p class="ayuda mt-3" th:if="${atajos.isEmpty()}">
-                Los botones rápidos registran un gasto o ingreso frecuente con un solo toque. Por ejemplo
-                «Moto $5.000» o «Venta postre».
-            </p>
-        </section>
-
-        <!-- Acciones secundarias: abren modales (sin JavaScript, van a las paginas clasicas) -->
-        <nav th:if="${propia}" class="grid grid-cols-3 gap-2" aria-label="Registrar">
-            <a th:href="@{/movimientos/nuevo}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
-               @click.prevent="$store.ui.abrirModal('movimiento')">
-                <svg th:replace="~{fragmentos/componentes :: icono('movimientos')}"></svg>Movimiento</a>
-            <a th:href="@{/registrar}" class="boton boton-claro flex-col gap-1 px-2 text-xs">
-                <svg th:replace="~{fragmentos/componentes :: icono('registrar')}"></svg>Producido</a>
-            <a th:href="@{/cajitas/repartir}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
-               th:if="${t.disponible().signum() > 0}">
-                <svg th:replace="~{fragmentos/componentes :: icono('cajitas')}"></svg>Repartir</a>
-            <a th:href="@{/categorias}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
-               th:unless="${t.disponible().signum() > 0}" @click.prevent="$store.ui.abrirModal('categoria')">
-                <svg th:replace="~{fragmentos/componentes :: icono('categorias')}"></svg>Categoría</a>
-        </nav>
-
-        <!-- ============================================================ Recordatorios -->
-        <section th:unless="${t.pendientes().isEmpty()}" aria-labelledby="titulo-pendientes">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-pendientes" class="seccion-titulo">Por confirmar</h2>
-            </div>
-            <div class="space-y-2.5">
-                <article class="tarjeta" th:each="r : ${t.pendientes()}"
-                         th:classappend="${r.estaVencido(t.hoy())} ? 'border-coral/30'">
-                    <div class="tarjeta-fila">
-                        <h3 class="text-sm" th:text="${r.nombre}">Arriendo</h3>
-                        <strong class="tabular-nums" th:classappend="${r.tipo.name() == 'INGRESO'} ? 'monto-ingreso' : 'monto-gasto'"
-                                th:text="${@formato.pesos(r.monto)}">$ 0</strong>
-                    </div>
-                    <p class="tarjeta-detalle">
-                        <span th:text="${@formato.fecha(r.proximaFecha)}"
-                              th:classappend="${r.estaVencido(t.hoy())} ? 'text-coral-claro'">1 oct</span>
-                        <span th:text="${r.nombreCategoria}">Arriendo</span>
-                        <span th:if="${r.nombreCajitaOrigen}" th:text="'Desde ' + ${r.nombreCajitaOrigen}"></span>
-                    </p>
-                    <div class="mt-3 flex items-center gap-3" th:if="${propia}">
-                        <form th:action="@{/recurrentes/{id}/confirmar(id=${r.id})}" method="post" class="en-linea flex-1">
-                            <input type="hidden" name="volver" value="/inicio">
-                            <input type="text" name="monto" inputmode="decimal" class="campo entrada-monto py-2 text-sm"
-                                   th:value="${@formato.entero(r.monto)}" aria-label="Monto real">
-                            <button type="submit" class="boton boton-principal boton-pequeno">Confirmar</button>
-                        </form>
-                        <form th:action="@{/recurrentes/{id}/omitir(id=${r.id})}" method="post"
-                              data-confirmar="¿Omitir este periodo sin registrar nada?">
-                            <input type="hidden" name="volver" value="/inicio">
-                            <button type="submit" class="enlace text-xs text-tinta-suave">Omitir</button>
-                        </form>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <!-- ============================================================ Este mes -->
-        <section th:fragment="resumenMes" id="seccion-resumenMes" th:attr="data-parcial=@{/inicio/parcial/resumenMes}"
-                 aria-labelledby="titulo-mes">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-mes" class="seccion-titulo">Este mes</h2>
-                <span class="nota" th:text="'Mes anterior: ' + ${@formato.pesos(tablero.mesAnterior().balance())}"></span>
-            </div>
-            <dl class="cifras" th:with="mes=${tablero.mesActual()}">
-                <div><dt>Ingresos</dt>
-                    <dd class="monto-ingreso" data-cifra="ingresosMes" th:attr="data-valor=${mes.ingresos()}"
-                        th:text="${@formato.pesos(mes.ingresos())}">$ 0</dd></div>
-                <div><dt>Gastos</dt>
-                    <dd class="monto-gasto" data-cifra="gastosMes" th:attr="data-valor=${mes.gastosTotales()}"
-                        th:text="${@formato.pesos(mes.gastosTotales())}">$ 0</dd></div>
-                <div class="col-span-2 flex items-end justify-between">
-                    <div>
-                        <dt>Balance</dt>
-                        <dd data-cifra="balanceMes" data-colorear th:attr="data-valor=${mes.balance()}"
-                            th:classappend="${mes.balancePositivo()} ? 'monto-ingreso' : 'monto-gasto'"
-                            th:text="${@formato.pesos(mes.balance())}">$ 0</dd>
-                    </div>
-                    <p class="text-right text-[11px] leading-snug text-tinta-tenue">
-                        Personales <span class="tabular-nums" th:text="${@formato.pesos(mes.gastosPersonales())}">$ 0</span><br>
-                        Operativos <span class="tabular-nums" th:text="${@formato.pesos(mes.costosOperativos())}">$ 0</span>
-                    </p>
+        <!-- Movil: una sola columna (el orden lo dan las clases order-*). Escritorio (lg):
+             rejilla de 3 columnas, contenido principal (2) + columna lateral (1). -->
+        <div class="columna-panel lg:col-span-2">
+            <!-- ============================================================ Saldo total -->
+            <section class="order-1 lg:order-none pt-3 lg:rounded-3xl lg:border lg:border-borde lg:bg-superficie lg:p-8" aria-labelledby="titulo-saldo">
+                <p class="text-sm text-tinta-suave">
+                    <span th:text="'Hola, ' + ${nombreCompleto}">Hola, Roger</span>
+                    <span class="text-tinta-tenue" th:text="'· ' + ${t.nombreMes()}">· septiembre 2026</span>
+                </p>
+                <h2 id="titulo-saldo" class="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-tinta-tenue">Saldo total</h2>
+                <p class="saldo-hero mt-2 lg:text-6xl" data-cifra="total" data-pulso
+                   th:attr="data-valor=${t.saldoTotal()}" th:text="${@formato.pesos(t.saldoTotal())}">$ 1.250.000</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="chip">Por repartir
+                        <strong data-cifra="disponible" th:attr="data-valor=${t.disponible()}"
+                                th:text="${@formato.pesos(t.disponible())}">$ 0</strong></span>
+                    <span class="chip">En cajitas
+                        <strong data-cifra="enCajitas" th:attr="data-valor=${t.totalCajitas()}"
+                                th:text="${@formato.pesos(t.totalCajitas())}">$ 0</strong></span>
                 </div>
-            </dl>
-        </section>
+            </section>
 
-        <!-- ============================================================ Presupuestos y metas -->
-        <section th:unless="${t.alertasPresupuesto().isEmpty()}" aria-labelledby="titulo-alertas">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-alertas" class="seccion-titulo">Presupuestos en alerta</h2>
-                <a class="seccion-enlace" th:if="${propia}" th:href="@{/presupuestos}">Ver todos</a>
-            </div>
-            <div class="tarjeta space-y-4">
-                <div th:each="p : ${t.alertasPresupuesto()}">
-                    <div class="tarjeta-fila text-sm">
-                        <span class="font-medium" th:text="${p.categoria()}">Alimentación</span>
-                        <span class="tabular-nums text-tinta-suave"
-                              th:text="${@formato.pesos(p.gastado())} + ' de ' + ${@formato.pesos(p.presupuestado())}">$ 0 de $ 0</span>
-                    </div>
-                    <progress max="100" th:value="${p.porcentajeBarra()}"
-                              th:class="${p.excedido()} ? 'barra barra-excedida' : 'barra barra-alerta'"
-                              th:text="${p.porcentaje()} + '%'"></progress>
+            <!-- ============================================================ Friccion cero -->
+            <section class="order-2 lg:order-none" th:fragment="atajos" th:unless="${soloLectura}" id="seccion-atajos" th:attr="data-parcial=@{/inicio/parcial/atajos}"
+                     x-data="seccionAtajos" aria-labelledby="titulo-atajos">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-atajos" class="seccion-titulo">Registro rápido</h2>
+                    <button type="button" class="seccion-enlace" th:unless="${atajos.isEmpty()}" @click="alternarEdicion"
+                            x-text="editando ? 'Listo' : 'Editar'">Editar</button>
                 </div>
-            </div>
-        </section>
-
-        <section th:unless="${t.metas().isEmpty()}" aria-labelledby="titulo-metas">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-metas" class="seccion-titulo">Metas</h2>
-                <a class="seccion-enlace" th:if="${propia}" th:href="@{/metas}">Ver todas</a>
-            </div>
-            <div class="tarjeta space-y-4">
-                <div th:each="pm : ${t.metas()}">
-                    <div class="tarjeta-fila text-sm">
-                        <span class="font-medium" th:text="${pm.meta().nombre}">Moto nueva</span>
-                        <span class="font-semibold tabular-nums text-esmeralda" th:text="${pm.porcentaje()} + '%'">40%</span>
-                    </div>
-                    <progress class="barra" max="100" th:value="${pm.porcentaje()}" th:text="${pm.porcentaje()} + '%'"></progress>
-                    <p class="nota mt-1.5" th:if="${pm.cumplida()}">¡Meta cumplida!</p>
-                    <p class="nota mt-1.5" th:if="${!pm.cumplida() and pm.aporteMensual() != null}"
-                       th:text="'Aporta ' + ${@formato.pesos(pm.aporteMensual())} + ' al mes para llegar a tiempo.'"></p>
+                <div class="grid grid-cols-2 gap-3 min-[400px]:grid-cols-3 xl:grid-cols-4">
+                    <th:block th:each="a : ${atajos}">
+                        <div th:replace="~{fragmentos/componentes :: botonRapido(${a})}"></div>
+                    </th:block>
+                    <a th:href="@{/registrar}" class="rapido-nuevo" @click.prevent="$store.ui.abrirModal('atajo')">
+                        <svg th:replace="~{fragmentos/componentes :: icono('mas')}"></svg>
+                        <span th:text="${atajos.isEmpty()} ? 'Crea tu primer botón' : 'Nuevo botón'">Nuevo botón</span>
+                    </a>
                 </div>
-            </div>
-        </section>
+                <p class="ayuda mt-3" th:if="${atajos.isEmpty()}">
+                    Los botones rápidos registran un gasto o ingreso frecuente con un solo toque. Por ejemplo
+                    «Moto $5.000» o «Venta postre».
+                </p>
+            </section>
 
-        <!-- ============================================================ Graficas (Chart.js) -->
-        <section th:unless="${t.sinMovimientos()}" x-data="pestanasGraficas" aria-labelledby="titulo-graficas">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-graficas" class="seccion-titulo">Tendencias</h2>
-            </div>
-            <div class="tarjeta space-y-4">
-                <div class="segmentos" role="tablist" aria-label="Gráficas">
-                    <button type="button" role="tab" class="segmento segmento-activo" :class="clase('producido')"
-                            @click="elegir('producido')">Producido</button>
-                    <button type="button" role="tab" class="segmento" :class="clase('meses')"
-                            @click="elegir('meses')">6 meses</button>
-                    <button type="button" role="tab" class="segmento" :class="clase('categorias')"
-                            th:unless="${t.datosGraficas().get('categorias').isEmpty()}"
-                            @click="elegir('categorias')">Gastos</button>
+            <!-- ============================================================ Graficas (Chart.js) -->
+            <section class="order-8 lg:order-none" th:unless="${t.sinMovimientos()}" x-data="pestanasGraficas" aria-labelledby="titulo-graficas">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-graficas" class="seccion-titulo">Tendencias</h2>
                 </div>
-                <figure x-show="activa === 'producido'">
-                    <figcaption class="sr-only">Producido diario del mes</figcaption>
-                    <div class="grafica-lienzo"><canvas id="grafica-producido" aria-label="Producido diario del mes"></canvas></div>
-                </figure>
-                <figure x-cloak x-show="activa === 'meses'">
-                    <figcaption class="sr-only">Ingresos y gastos, últimos 6 meses</figcaption>
-                    <div class="grafica-lienzo"><canvas id="grafica-meses" aria-label="Ingresos y gastos por mes"></canvas></div>
-                </figure>
-                <figure x-cloak x-show="activa === 'categorias'" th:unless="${t.datosGraficas().get('categorias').isEmpty()}">
-                    <figcaption class="sr-only">Gastos del mes por categoría</figcaption>
-                    <div class="grafica-lienzo h-64"><canvas id="grafica-categorias" aria-label="Gastos por categoría"></canvas></div>
-                </figure>
-            </div>
-            <script id="datos-graficas" type="application/json" th:inline="javascript">/*[[${t.datosGraficas()}]]*/ null</script>
-        </section>
-
-        <!-- ============================================================ Cajitas -->
-        <section th:fragment="cajitas" id="seccion-cajitas" th:attr="data-parcial=@{/inicio/parcial/cajitas}"
-                 aria-labelledby="titulo-cajitas">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-cajitas" class="seccion-titulo">Cajitas</h2>
-                <a class="seccion-enlace" th:unless="${soloLectura}" th:href="@{/cajitas}">Ver todas</a>
-            </div>
-            <p class="vacio" th:if="${tablero.cajitas().isEmpty() and !soloLectura}">
-                Crea tus cajitas (Daniela, Atenea, Emergencia, Chelas...) para repartir tu dinero.
-                <a th:href="@{/cajitas}">Crear cajita</a>
-            </p>
-            <div class="grid grid-cols-2 gap-3">
-                <th:block th:each="c : ${tablero.cajitas()}">
-                    <a th:replace="~{fragmentos/componentes :: tarjetaCajita(${c}, ${!soloLectura})}"></a>
-                </th:block>
-            </div>
-        </section>
-
-        <!-- ============================================================ Fuentes -->
-        <section aria-labelledby="titulo-fuentes" th:unless="${t.fuentes().isEmpty() and soloLectura}">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-fuentes" class="seccion-titulo">Fuentes</h2>
-                <a class="seccion-enlace" th:if="${propia}" th:href="@{/fuentes}">Administrar</a>
-            </div>
-            <p class="vacio" th:if="${t.fuentes().isEmpty()}">
-                Crea tu primera fuente de ingreso, por ejemplo el motocarro, para registrar su producido diario.
-                <a th:href="@{/fuentes}">Crear fuente</a>
-            </p>
-            <div class="space-y-3">
-                <article class="tarjeta" th:each="f : ${t.fuentes()}">
-                    <div class="tarjeta-fila mb-3">
-                        <h3 class="text-sm" th:text="${f.nombre()}">Motocarro</h3>
-                        <span class="chip" th:text="${f.diasTrabajados()} + (${f.diasTrabajados() == 1} ? ' día' : ' días')">0 días</span>
+                <div class="tarjeta space-y-4">
+                    <div class="segmentos" role="tablist" aria-label="Gráficas">
+                        <button type="button" role="tab" class="segmento segmento-activo" :class="clase('producido')"
+                                @click="elegir('producido')">Producido</button>
+                        <button type="button" role="tab" class="segmento" :class="clase('meses')"
+                                @click="elegir('meses')">6 meses</button>
+                        <button type="button" role="tab" class="segmento" :class="clase('categorias')"
+                                th:unless="${t.datosGraficas().get('categorias').isEmpty()}"
+                                @click="elegir('categorias')">Gastos</button>
                     </div>
-                    <dl class="grid grid-cols-3 gap-2 text-center">
-                        <div><dt class="text-[11px] text-tinta-tenue">Bruto</dt>
-                            <dd class="text-sm font-semibold tabular-nums" th:text="${@formato.pesos(f.bruto())}">$ 0</dd></div>
-                        <div><dt class="text-[11px] text-tinta-tenue">Costos</dt>
-                            <dd class="text-sm font-semibold tabular-nums monto-gasto" th:text="${@formato.pesos(f.costos())}">$ 0</dd></div>
-                        <div><dt class="text-[11px] text-tinta-tenue">Utilidad</dt>
-                            <dd class="text-sm font-semibold tabular-nums monto-ingreso" th:text="${@formato.pesos(f.utilidad())}">$ 0</dd></div>
-                    </dl>
-                    <p class="nota mt-3 border-t border-borde pt-2">
-                        Promedio <span class="tabular-nums text-tinta" th:text="${@formato.pesos(f.promedioDiario())}">$ 0</span> por día
-                        · margen <span class="tabular-nums text-tinta" th:text="${f.margen() != null} ? ${f.margen()} + '%' : '—'">—</span>
-                    </p>
-                </article>
-            </div>
-        </section>
+                    <figure x-show="activa === 'producido'">
+                        <figcaption class="sr-only">Producido diario del mes</figcaption>
+                        <div class="grafica-lienzo"><canvas id="grafica-producido" aria-label="Producido diario del mes"></canvas></div>
+                    </figure>
+                    <figure x-cloak x-show="activa === 'meses'">
+                        <figcaption class="sr-only">Ingresos y gastos, últimos 6 meses</figcaption>
+                        <div class="grafica-lienzo"><canvas id="grafica-meses" aria-label="Ingresos y gastos por mes"></canvas></div>
+                    </figure>
+                    <figure x-cloak x-show="activa === 'categorias'" th:unless="${t.datosGraficas().get('categorias').isEmpty()}">
+                        <figcaption class="sr-only">Gastos del mes por categoría</figcaption>
+                        <div class="grafica-lienzo h-64"><canvas id="grafica-categorias" aria-label="Gastos por categoría"></canvas></div>
+                    </figure>
+                </div>
+                <script id="datos-graficas" type="application/json" th:inline="javascript">/*[[${t.datosGraficas()}]]*/ null</script>
+            </section>
 
-        <!-- ============================================================ Ultimos movimientos -->
-        <section th:fragment="ultimos" id="seccion-ultimos" th:attr="data-parcial=@{/inicio/parcial/ultimos}"
-                 aria-labelledby="titulo-ultimos">
-            <div class="seccion-cabecera">
-                <h2 id="titulo-ultimos" class="seccion-titulo">Últimos movimientos</h2>
-                <a class="seccion-enlace" th:href="@{${baseRuta + '/movimientos'}}">Ver todos</a>
-            </div>
-            <p class="vacio" th:if="${tablero.sinMovimientos()}">
-                Aún no hay movimientos. Toca un botón rápido o registra tu primer producido del día.
-            </p>
-            <div class="lista" th:unless="${tablero.sinMovimientos()}">
-                <th:block th:each="m : ${tablero.ultimosMovimientos()}">
-                    <article th:replace="~{fragmentos/componentes :: filaMovimiento(${m}, ${baseRuta + '/inicio'})}"></article>
-                </th:block>
-            </div>
-        </section>
+            <!-- ============================================================ Cajitas -->
+            <section class="order-9 lg:order-none" th:fragment="cajitas" id="seccion-cajitas" th:attr="data-parcial=@{/inicio/parcial/cajitas}"
+                     aria-labelledby="titulo-cajitas">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-cajitas" class="seccion-titulo">Cajitas</h2>
+                    <a class="seccion-enlace" th:unless="${soloLectura}" th:href="@{/cajitas}">Ver todas</a>
+                </div>
+                <p class="vacio" th:if="${tablero.cajitas().isEmpty() and !soloLectura}">
+                    Crea tus cajitas (Daniela, Atenea, Emergencia, Chelas...) para repartir tu dinero.
+                    <a th:href="@{/cajitas}">Crear cajita</a>
+                </p>
+                <div class="grid grid-cols-2 gap-3 xl:grid-cols-3">
+                    <th:block th:each="c : ${tablero.cajitas()}">
+                        <a th:replace="~{fragmentos/componentes :: tarjetaCajita(${c}, ${!soloLectura})}"></a>
+                    </th:block>
+                </div>
+            </section>
+        </div>
+
+        <div class="columna-panel">
+            <!-- Acciones secundarias: abren modales (sin JavaScript, van a las paginas clasicas) -->
+            <nav th:if="${propia}" class="order-3 lg:order-none grid grid-cols-3 gap-2" aria-label="Registrar">
+                <a th:href="@{/movimientos/nuevo}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
+                   @click.prevent="$store.ui.abrirModal('movimiento')">
+                    <svg th:replace="~{fragmentos/componentes :: icono('movimientos')}"></svg>Movimiento</a>
+                <a th:href="@{/registrar}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
+               @click.prevent="$store.ui.abrirModal('producido')">
+                    <svg th:replace="~{fragmentos/componentes :: icono('registrar')}"></svg>Producido</a>
+                <a th:href="@{/cajitas/repartir}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
+                   th:if="${t.disponible().signum() > 0}">
+                    <svg th:replace="~{fragmentos/componentes :: icono('cajitas')}"></svg>Repartir</a>
+                <a th:href="@{/categorias}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
+                   th:unless="${t.disponible().signum() > 0}" @click.prevent="$store.ui.abrirModal('categoria')">
+                    <svg th:replace="~{fragmentos/componentes :: icono('categorias')}"></svg>Categoría</a>
+            </nav>
+
+            <!-- ============================================================ Este mes -->
+            <section class="order-5 lg:order-none" th:fragment="resumenMes" id="seccion-resumenMes" th:attr="data-parcial=@{/inicio/parcial/resumenMes}"
+                     aria-labelledby="titulo-mes">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-mes" class="seccion-titulo">Este mes</h2>
+                    <span class="nota" th:text="'Mes anterior: ' + ${@formato.pesos(tablero.mesAnterior().balance())}"></span>
+                </div>
+                <dl class="cifras" th:with="mes=${tablero.mesActual()}">
+                    <div><dt>Ingresos</dt>
+                        <dd class="monto-ingreso" data-cifra="ingresosMes" th:attr="data-valor=${mes.ingresos()}"
+                            th:text="${@formato.pesos(mes.ingresos())}">$ 0</dd></div>
+                    <div><dt>Gastos</dt>
+                        <dd class="monto-gasto" data-cifra="gastosMes" th:attr="data-valor=${mes.gastosTotales()}"
+                            th:text="${@formato.pesos(mes.gastosTotales())}">$ 0</dd></div>
+                    <div class="col-span-2 flex items-end justify-between">
+                        <div>
+                            <dt>Balance</dt>
+                            <dd data-cifra="balanceMes" data-colorear th:attr="data-valor=${mes.balance()}"
+                                th:classappend="${mes.balancePositivo()} ? 'monto-ingreso' : 'monto-gasto'"
+                                th:text="${@formato.pesos(mes.balance())}">$ 0</dd>
+                        </div>
+                        <p class="text-right text-[11px] leading-snug text-tinta-tenue">
+                            Personales <span class="tabular-nums" th:text="${@formato.pesos(mes.gastosPersonales())}">$ 0</span><br>
+                            Operativos <span class="tabular-nums" th:text="${@formato.pesos(mes.costosOperativos())}">$ 0</span>
+                        </p>
+                    </div>
+                </dl>
+            </section>
+
+            <!-- ============================================================ Recordatorios -->
+            <section class="order-4 lg:order-none" th:unless="${t.pendientes().isEmpty()}" aria-labelledby="titulo-pendientes">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-pendientes" class="seccion-titulo">Por confirmar</h2>
+                </div>
+                <div class="space-y-2.5">
+                    <article class="tarjeta" th:each="r : ${t.pendientes()}"
+                             th:classappend="${r.estaVencido(t.hoy())} ? 'border-coral/30'">
+                        <div class="tarjeta-fila">
+                            <h3 class="text-sm" th:text="${r.nombre}">Arriendo</h3>
+                            <strong class="tabular-nums" th:classappend="${r.tipo.name() == 'INGRESO'} ? 'monto-ingreso' : 'monto-gasto'"
+                                    th:text="${@formato.pesos(r.monto)}">$ 0</strong>
+                        </div>
+                        <p class="tarjeta-detalle">
+                            <span th:text="${@formato.fecha(r.proximaFecha)}"
+                                  th:classappend="${r.estaVencido(t.hoy())} ? 'text-coral-claro'">1 oct</span>
+                            <span th:text="${r.nombreCategoria}">Arriendo</span>
+                            <span th:if="${r.nombreCajitaOrigen}" th:text="'Desde ' + ${r.nombreCajitaOrigen}"></span>
+                        </p>
+                        <div class="mt-3 flex items-center gap-3" th:if="${propia}">
+                            <form th:action="@{/recurrentes/{id}/confirmar(id=${r.id})}" method="post" class="en-linea flex-1">
+                                <input type="hidden" name="volver" value="/inicio">
+                                <input type="text" name="monto" inputmode="decimal" class="campo entrada-monto py-2 text-sm"
+                                       th:value="${@formato.entero(r.monto)}" aria-label="Monto real">
+                                <button type="submit" class="boton boton-principal boton-pequeno">Confirmar</button>
+                            </form>
+                            <form th:action="@{/recurrentes/{id}/omitir(id=${r.id})}" method="post"
+                                  data-confirmar="¿Omitir este periodo sin registrar nada?">
+                                <input type="hidden" name="volver" value="/inicio">
+                                <button type="submit" class="enlace text-xs text-tinta-suave">Omitir</button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ============================================================ Presupuestos y metas -->
+            <section class="order-6 lg:order-none" th:unless="${t.alertasPresupuesto().isEmpty()}" aria-labelledby="titulo-alertas">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-alertas" class="seccion-titulo">Presupuestos en alerta</h2>
+                    <a class="seccion-enlace" th:if="${propia}" th:href="@{/presupuestos}">Ver todos</a>
+                </div>
+                <div class="tarjeta space-y-4">
+                    <div th:each="p : ${t.alertasPresupuesto()}">
+                        <div class="tarjeta-fila text-sm">
+                            <span class="font-medium" th:text="${p.categoria()}">Alimentación</span>
+                            <span class="tabular-nums text-tinta-suave"
+                                  th:text="${@formato.pesos(p.gastado())} + ' de ' + ${@formato.pesos(p.presupuestado())}">$ 0 de $ 0</span>
+                        </div>
+                        <progress max="100" th:value="${p.porcentajeBarra()}"
+                                  th:class="${p.excedido()} ? 'barra barra-excedida' : 'barra barra-alerta'"
+                                  th:text="${p.porcentaje()} + '%'"></progress>
+                    </div>
+                </div>
+            </section>
+
+            <section class="order-7 lg:order-none" th:unless="${t.metas().isEmpty()}" aria-labelledby="titulo-metas">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-metas" class="seccion-titulo">Metas</h2>
+                    <a class="seccion-enlace" th:if="${propia}" th:href="@{/metas}">Ver todas</a>
+                </div>
+                <div class="tarjeta space-y-4">
+                    <div th:each="pm : ${t.metas()}">
+                        <div class="tarjeta-fila text-sm">
+                            <span class="font-medium" th:text="${pm.meta().nombre}">Moto nueva</span>
+                            <span class="font-semibold tabular-nums text-esmeralda" th:text="${pm.porcentaje()} + '%'">40%</span>
+                        </div>
+                        <progress class="barra" max="100" th:value="${pm.porcentaje()}" th:text="${pm.porcentaje()} + '%'"></progress>
+                        <p class="nota mt-1.5" th:if="${pm.cumplida()}">¡Meta cumplida!</p>
+                        <p class="nota mt-1.5" th:if="${!pm.cumplida() and pm.aporteMensual() != null}"
+                           th:text="'Aporta ' + ${@formato.pesos(pm.aporteMensual())} + ' al mes para llegar a tiempo.'"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ Fuentes -->
+            <section class="order-10 lg:order-none" aria-labelledby="titulo-fuentes" th:unless="${t.fuentes().isEmpty() and soloLectura}">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-fuentes" class="seccion-titulo">Fuentes</h2>
+                    <a class="seccion-enlace" th:if="${propia}" th:href="@{/fuentes}">Administrar</a>
+                </div>
+                <p class="vacio" th:if="${t.fuentes().isEmpty()}">
+                    Crea tu primera fuente de ingreso, por ejemplo el motocarro, para registrar su producido diario.
+                    <a th:href="@{/fuentes}">Crear fuente</a>
+                </p>
+                <div class="space-y-3">
+                    <article class="tarjeta" th:each="f : ${t.fuentes()}">
+                        <div class="tarjeta-fila mb-3">
+                            <h3 class="text-sm" th:text="${f.nombre()}">Motocarro</h3>
+                            <span class="chip" th:text="${f.diasTrabajados()} + (${f.diasTrabajados() == 1} ? ' día' : ' días')">0 días</span>
+                        </div>
+                        <dl class="grid grid-cols-3 gap-2 text-center">
+                            <div><dt class="text-[11px] text-tinta-tenue">Bruto</dt>
+                                <dd class="text-sm font-semibold tabular-nums" th:text="${@formato.pesos(f.bruto())}">$ 0</dd></div>
+                            <div><dt class="text-[11px] text-tinta-tenue">Costos</dt>
+                                <dd class="text-sm font-semibold tabular-nums monto-gasto" th:text="${@formato.pesos(f.costos())}">$ 0</dd></div>
+                            <div><dt class="text-[11px] text-tinta-tenue">Utilidad</dt>
+                                <dd class="text-sm font-semibold tabular-nums monto-ingreso" th:text="${@formato.pesos(f.utilidad())}">$ 0</dd></div>
+                        </dl>
+                        <p class="nota mt-3 border-t border-borde pt-2">
+                            Promedio <span class="tabular-nums text-tinta" th:text="${@formato.pesos(f.promedioDiario())}">$ 0</span> por día
+                            · margen <span class="tabular-nums text-tinta" th:text="${f.margen() != null} ? ${f.margen()} + '%' : '—'">—</span>
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ============================================================ Ultimos movimientos -->
+            <section class="order-11 lg:order-none" th:fragment="ultimos" id="seccion-ultimos" th:attr="data-parcial=@{/inicio/parcial/ultimos}"
+                     aria-labelledby="titulo-ultimos">
+                <div class="seccion-cabecera">
+                    <h2 id="titulo-ultimos" class="seccion-titulo">Últimos movimientos</h2>
+                    <a class="seccion-enlace" th:href="@{${baseRuta + '/movimientos'}}">Ver todos</a>
+                </div>
+                <p class="vacio" th:if="${tablero.sinMovimientos()}">
+                    Aún no hay movimientos. Toca un botón rápido o registra tu primer producido del día.
+                </p>
+                <div class="lista" th:unless="${tablero.sinMovimientos()}">
+                    <th:block th:each="m : ${tablero.ultimosMovimientos()}">
+                        <article th:replace="~{fragmentos/componentes :: filaMovimiento(${m}, ${baseRuta + '/inicio'})}"></article>
+                    </th:block>
+                </div>
+            </section>
+        </div>
     </main>
 
     <th:block th:if="${propia}">

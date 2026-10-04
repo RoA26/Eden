@@ -42,9 +42,10 @@ public class InicioController {
         this.movimientoService = movimientoService;
     }
 
+    /** Landing publica; quien ya tiene sesion va directo a su tablero. */
     @GetMapping("/")
-    public String raiz() {
-        return "redirect:/inicio";
+    public String raiz(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return usuario == null ? "bienvenida" : "redirect:/inicio";
     }
 
     @GetMapping("/inicio")

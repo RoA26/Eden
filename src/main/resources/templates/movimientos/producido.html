@@ -5,29 +5,30 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Producido del día', 'registrar')}"></th:block>
 
-    <main class="contenido">
+    <main class="contenido lg:max-w-xl">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-        <section class="vacio space-y-4" th:if="${fuentes.isEmpty()}">
-            <p>Primero crea tu fuente de ingreso, por ejemplo <strong class="text-tinta">Motocarro</strong>, con frecuencia diaria.</p>
-            <a class="boton boton-principal" th:href="@{/fuentes}">Crear fuente</a>
+        <!-- Calculadora: un numero para la fuente principal, sin exigir crear una fuente antes -->
+        <section class="tarjeta p-5">
+            <form th:replace="~{fragmentos/modales :: formProducido(@{/inicio})}"></form>
         </section>
 
-        <form th:unless="${fuentes.isEmpty()}" th:action="@{/registrar}" th:object="${formulario}"
-              method="post" class="formulario" novalidate>
-            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+        <!-- Registro completo (ingreso + costo del dia), para quien ya tiene fuentes -->
+        <details class="desplegable" th:unless="${fuentes.isEmpty()}"
+                 th:attr="open=${formulario.monto != null} ? 'open' : null">
+            <summary>Registrar también el costo del día</summary>
+            <form th:action="@{/registrar}" th:object="${formulario}" method="post" class="formulario" novalidate>
+                <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
 
-            <div class="tarjeta grid gap-1.5 p-5">
-                <label for="monto" class="etiqueta">¿Cuánto hiciste hoy?</label>
+                <label for="monto">Producido</label>
                 <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" placeholder="$ 120.000"
-                       class="campo entrada-monto entrada-monto-grande" autofocus required
-                       th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
+                       class="entrada-monto" th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
                 <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
 
-                <div class="mt-1 grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3">
                     <div class="grid gap-1.5">
                         <label for="fecha" class="etiqueta">Fecha</label>
-                        <input id="fecha" type="date" class="campo" th:field="*{fecha}" required
+                        <input id="fecha" type="date" class="campo" th:field="*{fecha}"
                                th:classappend="${#fields.hasErrors('fecha')} ? 'con-error'">
                     </div>
                     <div class="grid gap-1.5">
@@ -40,16 +41,13 @@
                 <p class="error-campo" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></p>
                 <p class="error-campo" th:if="${#fields.hasErrors('idFuente')}" th:errors="*{idFuente}"></p>
 
-                <label for="idCategoriaIngreso" class="etiqueta">Categoría del ingreso</label>
-                <select id="idCategoriaIngreso" class="campo" th:field="*{idCategoriaIngreso}">
+                <label for="idCategoriaIngreso">Categoría del ingreso</label>
+                <select id="idCategoriaIngreso" th:field="*{idCategoriaIngreso}">
                     <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}">Producido</option>
                 </select>
                 <p class="error-campo" th:if="${#fields.hasErrors('idCategoriaIngreso')}" th:errors="*{idCategoriaIngreso}"></p>
-            </div>
 
-            <fieldset class="grupo">
-                <legend>Costo del día (opcional)</legend>
-                <label for="costo">Monto del costo</label>
+                <label for="costo">Costo del día (opcional)</label>
                 <input id="costo" type="text" inputmode="decimal" th:field="*{costo}" placeholder="Ej. 20.000 de gasolina"
                        class="entrada-monto" th:classappend="${#fields.hasErrors('costo')} ? 'con-error'">
                 <p class="error-campo" th:if="${#fields.hasErrors('costo')}" th:errors="*{costo}"></p>
@@ -59,10 +57,10 @@
                     <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
                 </select>
                 <p class="error-campo" th:if="${#fields.hasErrors('idCategoriaCosto')}" th:errors="*{idCategoriaCosto}"></p>
-            </fieldset>
 
-            <button type="submit" class="boton boton-principal">Guardar producido</button>
-        </form>
+                <button type="submit" class="boton boton-principal">Guardar producido y costo</button>
+            </form>
+        </details>
 
         <p class="flex justify-center gap-5 text-sm">
             <a class="enlace" th:href="@{/movimientos/nuevo(tipo='GASTO')}">Registrar un gasto</a>

@@ -10,6 +10,7 @@
     fuentes, cajitasActivas, tiposCategoria y hoy (ver InicioController).
 -->
 <th:block th:fragment="modales">
+    <div th:replace="~{fragmentos/componentes :: modal('producido', 'Producido del día', ~{fragmentos/modales :: formProducido(null)})}"></div>
     <div th:replace="~{fragmentos/componentes :: modal('movimiento', 'Registrar movimiento', ~{fragmentos/modales :: formMovimiento})}"></div>
     <div th:replace="~{fragmentos/componentes :: modal('atajo', 'Nuevo botón rápido', ~{fragmentos/modales :: formAtajo})}"></div>
     <div th:replace="~{fragmentos/componentes :: modal('categoria', 'Nueva categoría', ~{fragmentos/modales :: formCategoria})}"></div>
@@ -51,6 +52,68 @@
         + Crear una categoría
     </button>
 </th:block>
+
+<!--
+    Producido del dia como calculadora: un solo numero grande para la fuente
+    principal activa (la primera; si hay varias se elige con un toque). No exige
+    crear una fuente: sin fuentes se registra como ingreso "Producido" sin fuente.
+    Se envia como ingreso normal (POST /api/movimientos; sin JavaScript, /movimientos/nuevo).
+    irA: ruta a la que navegar al guardar (null en el modal del tablero).
+-->
+<form th:fragment="formProducido(irA)" th:action="@{/movimientos/nuevo}" method="post" class="grid gap-4" novalidate
+      x-data="calculadora" @submit.prevent="enviar" data-sin-autofoco data-refrescar="ultimos,resumenMes"
+      th:with="producidos=${categoriasIngreso.?[nombre == 'Producido']},
+               categoria=${!producidos.isEmpty()} ? ${producidos[0]} : (${categoriasIngreso.isEmpty()} ? null : ${categoriasIngreso[0]}),
+               fechaHoy=${hoy ?: formulario.fecha}"
+      th:attr="data-api=@{/api/movimientos},data-ir-a=${irA}">
+    <input type="hidden" name="tipo" value="INGRESO">
+    <input type="hidden" name="idCategoria" th:value="${categoria != null} ? ${categoria.id} : ''">
+    <input type="hidden" name="fecha" th:value="${fechaHoy}">
+
+    <p class="aviso aviso-error" role="alert" x-cloak x-show="errorGeneral" x-text="errorGeneral"></p>
+
+    <div class="rounded-3xl border border-borde bg-black/20 px-4 pb-4 pt-5 text-center">
+        <label for="producido-monto" class="text-xs font-semibold uppercase tracking-wider text-tinta-tenue">¿Cuánto hiciste hoy?</label>
+        <input id="producido-monto" name="monto" type="text" inputmode="numeric" autocomplete="off" placeholder="$ 0"
+               class="calculadora-pantalla mt-2" :value="texto()" @input="escribir">
+        <p class="error-campo mt-1" data-error-de="monto" x-cloak x-show="tieneError('monto')" x-text="errores.monto"></p>
+
+        <div class="mt-3 flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="Fuente">
+            <span class="chip" th:if="${fuentes.isEmpty()}">Sin fuente asignada</span>
+            <label class="chip-opcion has-[:checked]:border-esmeralda/40 has-[:checked]:bg-esmeralda/10 has-[:checked]:text-esmeralda-claro"
+                   th:each="f, estado : ${fuentes}">
+                <input type="radio" name="idFuente" class="sr-only" th:value="${f.id}" th:checked="${estado.first}">
+                <span th:text="${f.nombre}">Motocarro</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2">
+        <button type="button" class="chip-opcion justify-center py-2" @click="sumar(10000)">+ 10.000</button>
+        <button type="button" class="chip-opcion justify-center py-2" @click="sumar(50000)">+ 50.000</button>
+        <button type="button" class="chip-opcion justify-center py-2" @click="sumar(100000)">+ 100.000</button>
+    </div>
+
+    <div class="teclado" aria-label="Teclado numérico">
+        <button type="button" class="tecla" @click="pulsar('1')">1</button>
+        <button type="button" class="tecla" @click="pulsar('2')">2</button>
+        <button type="button" class="tecla" @click="pulsar('3')">3</button>
+        <button type="button" class="tecla" @click="pulsar('4')">4</button>
+        <button type="button" class="tecla" @click="pulsar('5')">5</button>
+        <button type="button" class="tecla" @click="pulsar('6')">6</button>
+        <button type="button" class="tecla" @click="pulsar('7')">7</button>
+        <button type="button" class="tecla" @click="pulsar('8')">8</button>
+        <button type="button" class="tecla" @click="pulsar('9')">9</button>
+        <button type="button" class="tecla tecla-suave" @click="pulsar('000')">000</button>
+        <button type="button" class="tecla" @click="pulsar('0')">0</button>
+        <button type="button" class="tecla tecla-suave" aria-label="Borrar" @click="borrar">⌫</button>
+    </div>
+
+    <button type="submit" class="boton boton-principal boton-bloque boton-grande" :disabled="enviando || vacio()">
+        <span class="spinner" x-cloak x-show="enviando"></span>Guardar producido
+    </button>
+    <a th:href="@{/fuentes}" class="justify-self-center text-xs font-semibold text-tinta-suave hover:text-tinta">Administrar fuentes</a>
+</form>
 
 <!-- Registrar un ingreso o gasto sin atajo -->
 <form th:fragment="formMovimiento" th:action="@{/movimientos/nuevo}" method="post" class="formulario" novalidate

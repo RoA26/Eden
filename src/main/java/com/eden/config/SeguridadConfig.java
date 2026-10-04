@@ -20,7 +20,7 @@ import com.eden.seguridad.LimitadorIntentosLogin;
 public class SeguridadConfig {
 
     private static final String[] RUTAS_PUBLICAS = {
-            "/login", "/registro", "/error", "/css/**", "/js/**", "/img/**",
+            "/", "/login", "/registro", "/error", "/css/**", "/js/**", "/img/**",
             "/iconos/**", "/manifest.json", "/sw.js", "/offline.html",
             "/recuperar", "/recuperar/**"
     };

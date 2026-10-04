@@ -28,14 +28,14 @@
     Mensajes flash del servidor. Sin JavaScript se ven en linea; con
     JavaScript, Alpine los convierte en avisos flotantes y los retira de aqui.
 -->
-<div th:fragment="avisos" class="space-y-2" th:if="${mensaje != null or error != null}">
+<div th:fragment="avisos" class="space-y-2 lg:col-span-full" th:if="${mensaje != null or error != null}">
     <p th:if="${mensaje}" class="aviso aviso-exito" role="status" data-aviso-inicial="exito" th:text="${mensaje}"></p>
     <p th:if="${error}" class="aviso aviso-error" role="alert" data-aviso-inicial="error" th:text="${error}"></p>
 </div>
 
 <!-- Avisos flotantes ("tostadas"), con accion opcional como "Deshacer" -->
 <div th:fragment="tostadas" aria-live="polite"
-     class="pointer-events-none fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-w-md flex-col gap-2 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+     class="pointer-events-none fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-w-md flex-col gap-2 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:left-auto lg:right-6 lg:mx-0 lg:w-96 lg:px-0 lg:pb-6">
     <template x-for="aviso in $store.avisos.lista" :key="aviso.id">
         <div class="tostada animate-aparecer" :class="aviso.tipo === 'error' ? 'tostada-error' : 'tostada-exito'"
              :role="aviso.tipo === 'error' ? 'alert' : 'status'">
@@ -128,7 +128,7 @@
 </div>
 
 <!-- Aviso y navegacion de una cuenta compartida (solo lectura) -->
-<div th:fragment="bannerCompartido" class="banner-compartido" th:if="${soloLectura}">
+<div th:fragment="bannerCompartido" class="banner-compartido lg:col-span-full" th:if="${soloLectura}">
     <p>Estás viendo la cuenta de <strong th:text="${nombreTitular}">Papá</strong>. Solo lectura.</p>
     <nav class="pestanas" aria-label="Secciones de la cuenta compartida">
         <a th:href="@{${baseRuta + '/inicio'}}">Inicio</a>

@@ -207,11 +207,21 @@
                 this.modal = nombre;
                 window.setTimeout(function () {
                     const panel = document.querySelector('[data-modal="' + nombre + '"]');
+                    if (panel && (panel.hasAttribute('data-sin-autofoco') || panel.querySelector('[data-sin-autofoco]'))) {
+                        return; // ej. la calculadora: en el telefono no debe abrir el teclado del sistema
+                    }
                     const campo = panel && panel.querySelector('[autofocus], input:not([type=hidden]):not([type=radio]), select');
                     if (campo) {
                         campo.focus({ preventScroll: true });
                     }
                 }, 120);
+            },
+            /** Para enlaces: abre el modal si esta pagina lo tiene; si no, deja que el enlace navegue. */
+            abrirSiExiste(nombre, evento) {
+                if (document.querySelector('[data-modal="' + nombre + '"]')) {
+                    evento.preventDefault();
+                    this.abrirModal(nombre);
+                }
             },
             cerrarModal() {
                 const volver = this.volverA;
@@ -323,6 +333,9 @@
                         refrescarDespues(['resumenMes'], 900); // despues de que termine la animacion
                     }
                     Alpine.store('ui').cerrarModal();
+                    if (formulario.dataset.irA) {
+                        window.setTimeout(function () { window.location.assign(formulario.dataset.irA); }, 900);
+                    }
                 },
 
                 alReiniciar() {},
@@ -365,6 +378,53 @@
                     this.tipo = 'GASTO';
                 }
             });
+        });
+
+        // Calculadora del producido del dia: teclado numerico grande, sin formularios largos.
+        Alpine.data('calculadora', function () {
+            return formularioAjax({
+                monto: '',
+
+                pulsar(digitos) {
+                    const nuevo = (this.monto + digitos).replace(/^0+/, '');
+                    if (nuevo.length <= 12) {
+                        this.monto = nuevo;
+                    }
+                },
+                borrar() {
+                    this.monto = this.monto.slice(0, -1);
+                },
+                sumar(cantidad) {
+                    this.monto = String((Number(this.monto) || 0) + cantidad);
+                },
+                /** Escritura directa con el teclado fisico: se conservan solo los digitos. */
+                escribir(evento) {
+                    this.monto = evento.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 12);
+                    evento.target.value = this.texto();
+                },
+                texto() {
+                    return this.monto ? pesos(this.monto) : '';
+                },
+                vacio() {
+                    return !this.monto;
+                },
+                alReiniciar() {
+                    this.monto = '';
+                }
+            });
+        });
+
+        // Menu del encabezado publico (landing) en el telefono.
+        Alpine.data('menuPublico', function () {
+            return {
+                abierto: false,
+                alternar() {
+                    this.abierto = !this.abierto;
+                },
+                cerrar() {
+                    this.abierto = false;
+                }
+            };
         });
 
         // Boton rapido: un toque registra el movimiento y actualiza el saldo.
