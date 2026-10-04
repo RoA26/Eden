@@ -1,66 +1,76 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Registrar producido')}"></head>
-<body>
-<main class="contenido">
-    <header class="encabezado"><h1>Producido del día</h1></header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion('Producido del día', 'registrar')}"></th:block>
 
-    <div th:replace="~{fragmentos/base :: avisos}"></div>
+    <main class="contenido">
+        <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-    <section class="vacio" th:if="${fuentes.isEmpty()}">
-        <p>Primero crea tu fuente de ingreso, por ejemplo <strong>Motocarro</strong>, con frecuencia diaria.</p>
-        <a class="boton boton-principal" th:href="@{/fuentes}">Crear fuente</a>
-    </section>
+        <section class="vacio space-y-4" th:if="${fuentes.isEmpty()}">
+            <p>Primero crea tu fuente de ingreso, por ejemplo <strong class="text-tinta">Motocarro</strong>, con frecuencia diaria.</p>
+            <a class="boton boton-principal" th:href="@{/fuentes}">Crear fuente</a>
+        </section>
 
-    <form th:unless="${fuentes.isEmpty()}" th:action="@{/registrar}" th:object="${formulario}"
-          method="post" class="formulario" novalidate>
-        <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+        <form th:unless="${fuentes.isEmpty()}" th:action="@{/registrar}" th:object="${formulario}"
+              method="post" class="formulario" novalidate>
+            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
 
-        <label for="monto">¿Cuánto hiciste?</label>
-        <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" placeholder="Ej. 120.000"
-               class="entrada-monto entrada-monto-grande" autofocus required
-               th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
-        <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
+            <div class="tarjeta grid gap-1.5 p-5">
+                <label for="monto" class="etiqueta">¿Cuánto hiciste hoy?</label>
+                <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" placeholder="$ 120.000"
+                       class="campo entrada-monto entrada-monto-grande" autofocus required
+                       th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
+                <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
 
-        <label for="fecha">Fecha</label>
-        <input id="fecha" type="date" th:field="*{fecha}" required
-               th:classappend="${#fields.hasErrors('fecha')} ? 'con-error'">
-        <p class="error-campo" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></p>
+                <div class="mt-1 grid grid-cols-2 gap-3">
+                    <div class="grid gap-1.5">
+                        <label for="fecha" class="etiqueta">Fecha</label>
+                        <input id="fecha" type="date" class="campo" th:field="*{fecha}" required
+                               th:classappend="${#fields.hasErrors('fecha')} ? 'con-error'">
+                    </div>
+                    <div class="grid gap-1.5">
+                        <label for="idFuente" class="etiqueta">Fuente</label>
+                        <select id="idFuente" class="campo" th:field="*{idFuente}">
+                            <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="error-campo" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></p>
+                <p class="error-campo" th:if="${#fields.hasErrors('idFuente')}" th:errors="*{idFuente}"></p>
 
-        <label for="idFuente">Fuente</label>
-        <select id="idFuente" th:field="*{idFuente}">
-            <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
-        </select>
-        <p class="error-campo" th:if="${#fields.hasErrors('idFuente')}" th:errors="*{idFuente}"></p>
+                <label for="idCategoriaIngreso" class="etiqueta">Categoría del ingreso</label>
+                <select id="idCategoriaIngreso" class="campo" th:field="*{idCategoriaIngreso}">
+                    <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}">Producido</option>
+                </select>
+                <p class="error-campo" th:if="${#fields.hasErrors('idCategoriaIngreso')}" th:errors="*{idCategoriaIngreso}"></p>
+            </div>
 
-        <label for="idCategoriaIngreso">Categoría del ingreso</label>
-        <select id="idCategoriaIngreso" th:field="*{idCategoriaIngreso}">
-            <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}">Producido</option>
-        </select>
-        <p class="error-campo" th:if="${#fields.hasErrors('idCategoriaIngreso')}" th:errors="*{idCategoriaIngreso}"></p>
+            <fieldset class="grupo">
+                <legend>Costo del día (opcional)</legend>
+                <label for="costo">Monto del costo</label>
+                <input id="costo" type="text" inputmode="decimal" th:field="*{costo}" placeholder="Ej. 20.000 de gasolina"
+                       class="entrada-monto" th:classappend="${#fields.hasErrors('costo')} ? 'con-error'">
+                <p class="error-campo" th:if="${#fields.hasErrors('costo')}" th:errors="*{costo}"></p>
 
-        <fieldset class="grupo">
-            <legend>Costo del día (opcional)</legend>
-            <label for="costo">Monto del costo</label>
-            <input id="costo" type="text" inputmode="decimal" th:field="*{costo}" placeholder="Ej. 20.000 de gasolina"
-                   class="entrada-monto" th:classappend="${#fields.hasErrors('costo')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('costo')}" th:errors="*{costo}"></p>
+                <label for="idCategoriaCosto">Tipo de costo</label>
+                <select id="idCategoriaCosto" th:field="*{idCategoriaCosto}">
+                    <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
+                </select>
+                <p class="error-campo" th:if="${#fields.hasErrors('idCategoriaCosto')}" th:errors="*{idCategoriaCosto}"></p>
+            </fieldset>
 
-            <label for="idCategoriaCosto">Tipo de costo</label>
-            <select id="idCategoriaCosto" th:field="*{idCategoriaCosto}">
-                <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
-            </select>
-            <p class="error-campo" th:if="${#fields.hasErrors('idCategoriaCosto')}" th:errors="*{idCategoriaCosto}"></p>
-        </fieldset>
+            <button type="submit" class="boton boton-principal">Guardar producido</button>
+        </form>
 
-        <button type="submit" class="boton boton-principal">Guardar producido</button>
-    </form>
+        <p class="flex justify-center gap-5 text-sm">
+            <a class="enlace" th:href="@{/movimientos/nuevo(tipo='GASTO')}">Registrar un gasto</a>
+            <a class="enlace" th:href="@{/movimientos/nuevo(tipo='INGRESO')}">Otro ingreso</a>
+        </p>
+    </main>
 
-    <p class="enlaces-secundarios">
-        <a th:href="@{/movimientos/nuevo(tipo='GASTO')}">Registrar un gasto</a>
-        <a th:href="@{/movimientos/nuevo(tipo='INGRESO')}">Registrar otro ingreso</a>
-    </p>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('registrar')}"></nav>
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.eden.servicio;
 
 import com.eden.config.RelojConfig;
 import com.eden.dto.ResumenPeriodo;
+import com.eden.dto.ResumenSaldo;
 import com.eden.dto.Tablero;
 import com.eden.dto.TotalPorCategoria;
 import com.eden.dto.TotalPorDia;
@@ -73,6 +74,15 @@ public class TableroService {
                 recurrenteService.pendientes(idUsuario),
                 presupuestoService.alertasDelMes(idUsuario),
                 metaService.listarActivas(idUsuario));
+    }
+
+    /** Saldo actual y resumen del mes; se devuelve tras cada registro hecho sin recargar la pagina. */
+    public ResumenSaldo saldo(Long idUsuario) {
+        YearMonth mes = YearMonth.from(LocalDate.now(reloj.withZone(RelojConfig.ZONA_COLOMBIA)));
+        BigDecimal enCajitas = cajitaService.listarActivas(idUsuario).stream()
+                .map(Cajita::getSaldo).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new ResumenSaldo(movimientoRepositorio.disponible(idUsuario), enCajitas,
+                movimientoRepositorio.resumen(idUsuario, mes.atDay(1), mes.atEndOfMonth()));
     }
 
     /** Datos listos para Chart.js; la plantilla los serializa como JSON. */

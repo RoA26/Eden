@@ -1,50 +1,58 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Más')}"></head>
-<body>
-<main class="contenido">
-    <header class="encabezado"><h1>Más</h1></header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion('Más opciones', 'mas')}"></th:block>
 
-    <section class="bloque" th:unless="${cuentasCompartidas.isEmpty()}">
-        <h2>Cuentas compartidas contigo</h2>
-        <nav class="menu">
-            <a th:each="a : ${cuentasCompartidas}" th:href="@{/compartido/{id}/inicio(id=${a.idTitular()})}">
-                <strong th:text="${a.nombreCompletoTitular()}">Papá</strong><span>Ver su cuenta (solo lectura)</span>
-            </a>
-        </nav>
-    </section>
+    <!-- Mismo contenido que el menu lateral: es su version sin JavaScript. -->
+    <main class="contenido">
+        <section th:unless="${cuentasCompartidas.isEmpty()}">
+            <h2 class="seccion-titulo mb-3">Cuentas compartidas contigo</h2>
+            <nav class="menu">
+                <a th:each="a : ${cuentasCompartidas}" th:href="@{/compartido/{id}/inicio(id=${a.idTitular()})}">
+                    <strong th:text="${a.nombreCompletoTitular()}">Papá</strong><span>Ver su cuenta (solo lectura)</span>
+                </a>
+            </nav>
+        </section>
 
-    <section class="bloque">
-        <h2>Mi dinero</h2>
-        <nav class="menu" aria-label="Mi dinero">
-            <a th:href="@{/cajitas}"><strong>Cajitas</strong><span>Saldos, aportes y reparto del disponible</span></a>
-            <a th:href="@{/metas}"><strong>Metas</strong><span>Lo que estás ahorrando y cuánto falta</span></a>
-            <a th:href="@{/presupuestos}"><strong>Presupuestos</strong><span>Topes mensuales por categoría</span></a>
-            <a th:href="@{/recurrentes}"><strong>Recurrentes</strong><span>Arriendo, SOAT, servicios y otros pagos fijos</span></a>
-        </nav>
-    </section>
+        <section>
+            <h2 class="seccion-titulo mb-3">Mi dinero</h2>
+            <nav class="menu" aria-label="Mi dinero">
+                <a th:href="@{/inicio}"><strong>Inicio</strong><span>Saldo, botones rápidos y resumen del mes</span></a>
+                <a th:href="@{/movimientos}"><strong>Movimientos</strong><span>Todo lo que entra y sale</span></a>
+                <a th:href="@{/calendario}"><strong>Calendario</strong><span>Tu producido día a día</span></a>
+                <a th:href="@{/cajitas}"><strong>Cajitas</strong><span>Saldos, aportes y reparto del disponible</span></a>
+                <a th:href="@{/metas}"><strong>Metas</strong><span>Lo que estás ahorrando y cuánto falta</span></a>
+                <a th:href="@{/presupuestos}"><strong>Presupuestos</strong><span>Topes mensuales por categoría</span></a>
+                <a th:href="@{/recurrentes}"><strong>Recurrentes</strong><span>Arriendo, SOAT, servicios y otros pagos fijos</span></a>
+            </nav>
+        </section>
 
-    <section class="bloque">
-        <h2>Registrar</h2>
-        <nav class="menu" aria-label="Registrar">
-            <a th:href="@{/movimientos/nuevo(tipo='GASTO')}"><strong>Un gasto</strong><span>Personal o costo de una fuente</span></a>
-            <a th:href="@{/movimientos/nuevo(tipo='INGRESO')}"><strong>Otro ingreso</strong><span>Salario, ventas u otros ingresos</span></a>
-        </nav>
-    </section>
+        <section>
+            <h2 class="seccion-titulo mb-3">Registrar</h2>
+            <nav class="menu" aria-label="Registrar">
+                <a th:href="@{/registrar}"><strong>Producido del día</strong><span>Lo que hizo tu fuente hoy</span></a>
+                <a th:href="@{/movimientos/nuevo(tipo='GASTO')}"><strong>Un gasto</strong><span>Personal o costo de una fuente</span></a>
+                <a th:href="@{/movimientos/nuevo(tipo='INGRESO')}"><strong>Otro ingreso</strong><span>Salario, ventas u otros ingresos</span></a>
+            </nav>
+        </section>
 
-    <section class="bloque">
-        <h2>Configuración</h2>
-        <nav class="menu" aria-label="Configuración">
-            <a th:href="@{/fuentes}"><strong>Fuentes de ingreso</strong><span>Motocarro y otras fuentes</span></a>
-            <a th:href="@{/categorias}"><strong>Categorías</strong><span>Ingresos, gastos y costos operativos</span></a>
-            <a th:href="@{/compartir}"><strong>Compartir mi cuenta</strong><span>Acceso de solo lectura para otra persona</span></a>
-        </nav>
-    </section>
+        <section>
+            <h2 class="seccion-titulo mb-3">Configuración</h2>
+            <nav class="menu" aria-label="Configuración">
+                <a th:href="@{/fuentes}"><strong>Fuentes de ingreso</strong><span>Motocarro y otras fuentes</span></a>
+                <a th:href="@{/categorias}"><strong>Categorías</strong><span>Ingresos, gastos y costos operativos</span></a>
+                <a th:href="@{/compartir}"><strong>Compartir mi cuenta</strong><span>Acceso de solo lectura para otra persona</span></a>
+            </nav>
+        </section>
 
-    <form th:action="@{/logout}" method="post" class="salir">
-        <button type="submit" class="boton boton-claro">Cerrar sesión</button>
-    </form>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="boton boton-claro boton-bloque">Cerrar sesión</button>
+        </form>
+    </main>
+
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

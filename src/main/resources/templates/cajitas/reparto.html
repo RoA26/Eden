@@ -1,55 +1,58 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Repartir')}"></head>
-<body>
-<main class="contenido" th:with="p=${reparto.propuesta()}">
-    <p class="migas"><a th:href="@{/cajitas}">Cajitas</a></p>
-    <header class="encabezado"><h1>Repartir el disponible</h1></header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco" th:with="p=${reparto.propuesta()}">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion('Repartir', 'cajitas')}"></th:block>
 
-    <div th:replace="~{fragmentos/base :: avisos}"></div>
+    <main class="contenido">
+        <p class="migas"><a th:href="@{/cajitas}">Cajitas</a></p>
+        <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-    <section class="disponible disponible-compacto">
-        <p class="disponible-etiqueta">Disponible por repartir</p>
-        <p class="disponible-monto" th:text="${@formato.pesos(reparto.disponible())}">$ 0</p>
-    </section>
+        <section>
+            <p class="text-xs font-semibold uppercase tracking-wider text-tinta-tenue">Disponible por repartir</p>
+            <p class="saldo-hero mt-2" th:text="${@formato.pesos(reparto.disponible())}">$ 0</p>
+        </section>
 
-    <form th:action="@{/cajitas/repartir}" method="get" class="formulario formulario-en-linea">
-        <label for="montoARepartir">Monto a repartir</label>
-        <div class="en-linea">
-            <input id="montoARepartir" name="monto" type="text" inputmode="decimal" class="entrada-monto"
-                   th:value="${@formato.entero(p.montoARepartir())}">
-            <button type="submit" class="boton boton-claro">Calcular</button>
-        </div>
-    </form>
+        <form th:action="@{/cajitas/repartir}" method="get" class="formulario">
+            <label for="montoARepartir">Monto a repartir</label>
+            <div class="en-linea">
+                <input id="montoARepartir" name="monto" type="text" inputmode="decimal" class="entrada-monto"
+                       th:value="${@formato.entero(p.montoARepartir())}">
+                <button type="submit" class="boton boton-claro">Calcular</button>
+            </div>
+        </form>
 
-    <p class="vacio" th:if="${p.lineas().isEmpty()}">
-        No tienes cajitas activas. <a th:href="@{/cajitas}">Crea tus cajitas</a> para poder repartir.
-    </p>
+        <p class="vacio" th:if="${p.lineas().isEmpty()}">
+            No tienes cajitas activas. <a th:href="@{/cajitas}">Crea tus cajitas</a> para poder repartir.
+        </p>
 
-    <form th:unless="${p.lineas().isEmpty()}" th:action="@{/cajitas/repartir}" th:object="${formulario}"
-          method="post" class="formulario">
-        <p class="ayuda">Esta es la sugerencia según tus porcentajes. Puedes ajustar cualquier valor antes de confirmar.</p>
+        <form th:unless="${p.lineas().isEmpty()}" th:action="@{/cajitas/repartir}" th:object="${formulario}"
+              method="post" class="grid gap-2.5">
+            <p class="ayuda">Esta es la sugerencia según tus porcentajes. Puedes ajustar cualquier valor antes de confirmar.</p>
 
-        <div class="linea-reparto" th:each="linea, estado : ${p.lineas()}">
-            <input type="hidden" th:field="*{lineas[__${estado.index}__].idCajita}">
-            <label>
-                <span class="linea-reparto-nombre">
-                    <strong th:text="${linea.cajita().nombre}">Daniela</strong>
-                    <span th:text="${linea.cajita().esResto} ? 'lo que sobra' : ${@formato.porcentaje(linea.cajita().porcentaje)}">40%</span>
-                </span>
-                <input type="text" inputmode="decimal" class="entrada-monto"
-                       th:field="*{lineas[__${estado.index}__].monto}">
-            </label>
-        </div>
+            <div class="linea-reparto" th:each="linea, estado : ${p.lineas()}">
+                <input type="hidden" th:field="*{lineas[__${estado.index}__].idCajita}">
+                <label>
+                    <span class="linea-reparto-nombre">
+                        <strong th:text="${linea.cajita().nombre}">Daniela</strong>
+                        <span th:text="${linea.cajita().esResto} ? 'lo que sobra' : ${@formato.porcentaje(linea.cajita().porcentaje)}">40%</span>
+                    </span>
+                    <input type="text" inputmode="decimal" class="entrada-monto"
+                           th:field="*{lineas[__${estado.index}__].monto}">
+                </label>
+            </div>
 
-        <p class="nota" th:if="${p.sobrante().signum() > 0}"
-           th:text="${@formato.pesos(p.sobrante())} + ' quedarán en el disponible porque ninguna cajita está marcada para recibir lo que sobra.'"></p>
-        <p class="nota" th:if="${!reparto.hayResto() and reparto.porcentajesIncompletos()}"
-           th:text="'Tus porcentajes suman ' + ${@formato.porcentaje(reparto.sumaPorcentajes())} + '.'"></p>
+            <p class="nota" th:if="${p.sobrante().signum() > 0}"
+               th:text="${@formato.pesos(p.sobrante())} + ' quedarán en el disponible porque ninguna cajita está marcada para recibir lo que sobra.'"></p>
+            <p class="nota" th:if="${!reparto.hayResto() and reparto.porcentajesIncompletos()}"
+               th:text="'Tus porcentajes suman ' + ${@formato.porcentaje(reparto.sumaPorcentajes())} + '.'"></p>
 
-        <button type="submit" class="boton boton-principal">Confirmar reparto</button>
-    </form>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+            <button type="submit" class="boton boton-principal mt-2">Confirmar reparto</button>
+        </form>
+    </main>
+
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

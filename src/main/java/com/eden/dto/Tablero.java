@@ -24,6 +24,11 @@ public record Tablero(LocalDate hoy,
                       List<EstadoPresupuesto> alertasPresupuesto,
                       List<ProgresoMeta> metas) {
 
+    /** Saldo total: lo que hay por repartir mas lo ahorrado en las cajitas. */
+    public BigDecimal saldoTotal() {
+        return disponible.add(totalCajitas);
+    }
+
     public boolean sinMovimientos() {
         return ultimosMovimientos.isEmpty();
     }

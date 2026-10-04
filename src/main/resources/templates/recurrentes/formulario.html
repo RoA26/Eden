@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Recurrente')}"></head>
-<body>
-<main class="contenido" th:with="esNuevo=${idRecurrente == null}">
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco" th:with="esNuevo=${idRecurrente == null}">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion(${esNuevo} ? 'Nuevo recurrente' : 'Editar recurrente', 'recurrentes')}"></th:block>
+
+<main class="contenido">
     <p class="migas"><a th:href="@{/recurrentes}">Recurrentes</a></p>
-    <header class="encabezado">
-        <h1 th:text="${esNuevo} ? 'Nuevo recurrente' : 'Editar recurrente'">Nuevo recurrente</h1>
-    </header>
 
     <form th:action="${esNuevo} ? @{/recurrentes/nuevo} : @{/recurrentes/{id}/editar(id=${idRecurrente})}"
-          th:object="${formulario}" method="post" class="formulario" novalidate>
+          th:object="${formulario}" method="post" class="formulario tarjeta p-5" novalidate>
         <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
 
         <label for="nombre">Nombre</label>
@@ -77,6 +77,8 @@
         <a class="boton boton-claro" th:href="@{/recurrentes}">Cancelar</a>
     </form>
 </main>
-<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

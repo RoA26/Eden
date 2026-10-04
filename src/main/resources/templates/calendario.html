@@ -1,54 +1,60 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Calendario')}"></head>
-<body>
-<main class="contenido" th:with="cal=${calendario}">
-    <header class="encabezado encabezado-mes-nav">
-        <a class="boton boton-claro boton-pequeno" th:href="@{${baseRuta + '/calendario'}(mes=${cal.mesAnterior()})}"
-           aria-label="Mes anterior">‹</a>
-        <h1 th:text="${@formato.mes(cal.mes())}">septiembre 2026</h1>
-        <a class="boton boton-claro boton-pequeno" th:href="@{${baseRuta + '/calendario'}(mes=${cal.mesSiguiente()})}"
-           th:unless="${esMesActual}" aria-label="Mes siguiente">›</a>
-        <span th:if="${esMesActual}" class="espaciador"></span>
-    </header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco" th:with="cal=${calendario}">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion('Calendario', 'calendario')}"></th:block>
 
-    <div th:replace="~{fragmentos/base :: bannerCompartido}"></div>
+    <main class="contenido">
+        <div th:replace="~{fragmentos/componentes :: bannerCompartido}"></div>
 
-    <dl class="cifras">
-        <div><dt>Ingresos</dt><dd class="monto-ingreso" th:text="${@formato.pesos(cal.totalIngresos())}">$ 0</dd></div>
-        <div><dt>Gastos</dt><dd class="monto-gasto" th:text="${@formato.pesos(cal.totalGastos())}">$ 0</dd></div>
-        <div><dt>Días con producido</dt><dd th:text="${cal.diasConProducido()}">0</dd></div>
-        <div><dt>Días sin registro</dt><dd th:text="${cal.diasSinProducido()}">0</dd></div>
-    </dl>
-
-    <div class="calendario" role="grid" aria-label="Calendario de ingresos">
-        <div class="calendario-semana calendario-cabecera" role="row">
-            <span role="columnheader">L</span><span role="columnheader">M</span><span role="columnheader">M</span>
-            <span role="columnheader">J</span><span role="columnheader">V</span><span role="columnheader">S</span>
-            <span role="columnheader">D</span>
+        <div class="flex items-center justify-between gap-3">
+            <a class="boton-icono" th:href="@{${baseRuta + '/calendario'}(mes=${cal.mesAnterior()})}" aria-label="Mes anterior">‹</a>
+            <h2 class="text-lg font-bold capitalize" th:text="${@formato.mes(cal.mes())}">septiembre 2026</h2>
+            <a class="boton-icono" th:href="@{${baseRuta + '/calendario'}(mes=${cal.mesSiguiente()})}"
+               th:unless="${esMesActual}" aria-label="Mes siguiente">›</a>
+            <span th:if="${esMesActual}" class="h-10 w-10"></span>
         </div>
-        <div class="calendario-semana" role="row" th:each="semana : ${cal.semanas()}">
-            <a th:each="d : ${semana}" role="gridcell"
-               th:href="@{${baseRuta + '/movimientos'}(desde=${d.fecha()},hasta=${d.fecha()})}"
-               th:class="'dia' + (${!d.delMes()} ? ' dia-fuera' : '') + (${d.hoy()} ? ' dia-hoy' : '')
-                         + (${d.conProducido()} ? ' dia-producido' : '') + (${d.sinProducido()} ? ' dia-sin-registro' : '')"
-               th:attr="aria-label=${@formato.fechaLarga(d.fecha())}">
-                <span class="dia-numero" th:text="${d.fecha().dayOfMonth}">1</span>
-                <span class="dia-ingreso" th:if="${d.delMes() and d.tieneIngresos()}"
-                      th:text="${@formato.compacto(d.ingresos())}">85k</span>
-                <span class="dia-gasto" th:if="${d.delMes() and d.tieneGastos()}"
-                      th:text="${@formato.compacto(d.gastos())}">20k</span>
-            </a>
-        </div>
-    </div>
 
-    <ul class="leyenda">
-        <li><span class="leyenda-muestra leyenda-producido"></span>Día con producido</li>
-        <li><span class="leyenda-muestra leyenda-sin-registro"></span>Día sin registro (fuente diaria)</li>
-        <li><span class="leyenda-muestra leyenda-hoy"></span>Hoy</li>
-    </ul>
-    <p class="nota">Toca un día para ver sus movimientos.</p>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('calendario')}"></nav>
+        <dl class="cifras">
+            <div><dt>Ingresos</dt><dd class="monto-ingreso" th:text="${@formato.pesos(cal.totalIngresos())}">$ 0</dd></div>
+            <div><dt>Gastos</dt><dd class="monto-gasto" th:text="${@formato.pesos(cal.totalGastos())}">$ 0</dd></div>
+            <div><dt>Días con producido</dt><dd th:text="${cal.diasConProducido()}">0</dd></div>
+            <div><dt>Días sin registro</dt><dd th:text="${cal.diasSinProducido()}">0</dd></div>
+        </dl>
+
+        <div class="calendario" role="grid" aria-label="Calendario de ingresos">
+            <div class="calendario-semana calendario-cabecera" role="row">
+                <span role="columnheader">L</span><span role="columnheader">M</span><span role="columnheader">M</span>
+                <span role="columnheader">J</span><span role="columnheader">V</span><span role="columnheader">S</span>
+                <span role="columnheader">D</span>
+            </div>
+            <div class="calendario-semana" role="row" th:each="semana : ${cal.semanas()}">
+                <a th:each="d : ${semana}" role="gridcell"
+                   th:href="@{${baseRuta + '/movimientos'}(desde=${d.fecha()},hasta=${d.fecha()})}"
+                   th:class="'dia' + (${!d.delMes()} ? ' dia-fuera' : '') + (${d.hoy()} ? ' dia-hoy' : '')
+                             + (${d.conProducido()} ? ' dia-producido' : '') + (${d.sinProducido()} ? ' dia-sin-registro' : '')"
+                   th:attr="aria-label=${@formato.fechaLarga(d.fecha())}">
+                    <span class="dia-numero" th:text="${d.fecha().dayOfMonth}">1</span>
+                    <span class="dia-ingreso" th:if="${d.delMes() and d.tieneIngresos()}"
+                          th:text="${@formato.compacto(d.ingresos())}">85k</span>
+                    <span class="dia-gasto" th:if="${d.delMes() and d.tieneGastos()}"
+                          th:text="${@formato.compacto(d.gastos())}">20k</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <ul class="leyenda">
+                <li><span class="leyenda-muestra leyenda-producido"></span>Día con producido</li>
+                <li><span class="leyenda-muestra leyenda-sin-registro"></span>Sin registro (fuente diaria)</li>
+                <li><span class="leyenda-muestra leyenda-hoy"></span>Hoy</li>
+            </ul>
+            <p class="nota">Toca un día para ver sus movimientos.</p>
+        </div>
+    </main>
+
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

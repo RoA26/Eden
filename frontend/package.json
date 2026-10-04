@@ -1,0 +1,14 @@
+{
+  "name": "eden-frontend",
+  "private": true,
+  "description": "Hoja de estilos de Eden (Tailwind CSS). El CSS compilado se guarda en src/main/resources/static/css/eden.css; Maven no necesita Node.",
+  "scripts": {
+    "css": "tailwindcss -c tailwind.config.js -i estilos/eden.css -o ../src/main/resources/static/css/eden.css --minify",
+    "css:vigilar": "tailwindcss -c tailwind.config.js -i estilos/eden.css -o ../src/main/resources/static/css/eden.css --watch",
+    "vendor": "node scripts/copiar-vendor.mjs"
+  },
+  "devDependencies": {
+    "@alpinejs/csp": "3.17.4",
+    "tailwindcss": "3.4.19"
+  }
+}

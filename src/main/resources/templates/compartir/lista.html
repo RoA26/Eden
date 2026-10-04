@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Compartir')}"></head>
-<body>
-<main class="contenido">
-    <header class="encabezado"><h1>Compartir mi cuenta</h1></header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion('Compartir mi cuenta', 'compartir')}"></th:block>
 
-    <div th:replace="~{fragmentos/base :: avisos}"></div>
+    <main class="contenido">
+        <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-    <p class="ayuda">Las personas que agregues podrán ver tu tablero, tus movimientos y tu calendario,
-        pero no podrán registrar, editar ni borrar nada. Puedes quitarles el acceso cuando quieras.</p>
+        <p class="ayuda text-sm">Las personas que agregues podrán ver tu tablero, tus movimientos y tu calendario,
+            pero no podrán registrar, editar ni borrar nada. Puedes quitarles el acceso cuando quieras.</p>
 
-    <section class="bloque">
-        <h2>Pueden ver mi cuenta</h2>
-        <p class="vacio" th:if="${concedidos.isEmpty()}">Nadie tiene acceso a tu cuenta.</p>
-        <div class="fila-edicion" th:each="a : ${concedidos}">
-            <div class="fila-mov-info">
-                <p class="fila-mov-titulo" th:text="${a.nombreCompletoInvitado()}">Papá</p>
-                <p class="fila-mov-detalle">
-                    <span th:text="${a.nombreUsuarioInvitado()}">papa</span>
-                    <span th:text="'Desde el ' + ${@formato.fecha(a.fechaConcesion())}"></span>
-                </p>
+        <section>
+            <h2 class="seccion-titulo mb-3">Pueden ver mi cuenta</h2>
+            <p class="vacio" th:if="${concedidos.isEmpty()}">Nadie tiene acceso a tu cuenta.</p>
+            <div class="lista" th:unless="${concedidos.isEmpty()}">
+                <div class="fila-edicion" th:each="a : ${concedidos}">
+                    <div class="fila-mov-info">
+                        <p class="fila-mov-titulo" th:text="${a.nombreCompletoInvitado()}">Papá</p>
+                        <p class="fila-mov-detalle">
+                            <span th:text="${a.nombreUsuarioInvitado()}">papa</span>
+                            <span th:text="'Desde el ' + ${@formato.fecha(a.fechaConcesion())}"></span>
+                        </p>
+                    </div>
+                    <form th:action="@{/compartir/{id}/revocar(id=${a.id()})}" method="post"
+                          data-confirmar="¿Quitar el acceso a esta persona?">
+                        <button type="submit" class="enlace-peligro text-xs">Quitar acceso</button>
+                    </form>
+                </div>
             </div>
-            <form th:action="@{/compartir/{id}/revocar(id=${a.id()})}" method="post"
-                  data-confirmar="¿Quitar el acceso a esta persona?">
-                <button type="submit" class="enlace-peligro">Quitar acceso</button>
+        </section>
+
+        <section>
+            <h2 class="seccion-titulo mb-3">Dar acceso</h2>
+            <form th:action="@{/compartir}" th:object="${formulario}" method="post" class="formulario tarjeta p-5" novalidate>
+                <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+                <label for="nombreUsuario">Nombre de usuario de la persona</label>
+                <input id="nombreUsuario" type="text" th:field="*{nombreUsuario}" autocapitalize="none" maxlength="30"
+                       th:classappend="${#fields.hasErrors('nombreUsuario')} ? 'con-error'">
+                <p class="error-campo" th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}"></p>
+                <p class="ayuda">La persona debe haber creado su propia cuenta en Eden.</p>
+                <button type="submit" class="boton boton-principal">Dar acceso de solo lectura</button>
             </form>
-        </div>
-    </section>
+        </section>
 
-    <section class="bloque">
-        <h2>Dar acceso</h2>
-        <form th:action="@{/compartir}" th:object="${formulario}" method="post" class="formulario" novalidate>
-            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
-            <label for="nombreUsuario">Nombre de usuario de la persona</label>
-            <input id="nombreUsuario" type="text" th:field="*{nombreUsuario}" autocapitalize="none" maxlength="30"
-                   th:classappend="${#fields.hasErrors('nombreUsuario')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}"></p>
-            <p class="ayuda">La persona debe haber creado su propia cuenta en Eden.</p>
-            <button type="submit" class="boton boton-principal">Dar acceso de solo lectura</button>
-        </form>
-    </section>
+        <section th:unless="${recibidos.isEmpty()}">
+            <h2 class="seccion-titulo mb-3">Cuentas que yo puedo ver</h2>
+            <nav class="menu">
+                <a th:each="a : ${recibidos}" th:href="@{/compartido/{id}/inicio(id=${a.idTitular()})}">
+                    <strong th:text="${a.nombreCompletoTitular()}">Papá</strong><span>Solo lectura</span>
+                </a>
+            </nav>
+        </section>
+    </main>
 
-    <section class="bloque" th:unless="${recibidos.isEmpty()}">
-        <h2>Cuentas que yo puedo ver</h2>
-        <nav class="menu">
-            <a th:each="a : ${recibidos}" th:href="@{/compartido/{id}/inicio(id=${a.idTitular()})}">
-                <strong th:text="${a.nombreCompletoTitular()}">Papá</strong><span>Solo lectura</span>
-            </a>
-        </nav>
-    </section>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

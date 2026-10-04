@@ -1,0 +1,367 @@
+/* =====================================================================
+   Eden - sistema de diseno "Cozy Fintech" (Tailwind CSS).
+   Fuente de src/main/resources/static/css/eden.css: despues de editar
+   este archivo o las plantillas, ejecuta `npm run css` en frontend/.
+   Oscuro primero, movil primero. En escritorio todo vive dentro de un
+   "marco" central del ancho de un telefono.
+   ===================================================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ base */
+@layer base {
+    :root {
+        color-scheme: dark;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html { @apply bg-fondo-hondo; }
+
+    body {
+        @apply min-h-screen bg-fondo font-sans text-[15px] leading-relaxed text-tinta antialiased;
+        min-height: 100dvh;
+        background-image:
+            radial-gradient(90% 40% at 50% -5%, rgba(16, 185, 129, 0.10), transparent 70%),
+            radial-gradient(60% 30% at 100% 100%, rgba(16, 185, 129, 0.04), transparent 70%);
+        background-attachment: fixed;
+    }
+
+    h1, h2, h3 { @apply font-semibold tracking-tight text-tinta; }
+    a { @apply transition-colors; }
+
+    :focus-visible { @apply outline-none ring-2 ring-esmeralda/70 ring-offset-2 ring-offset-fondo; }
+
+    ::selection { @apply bg-esmeralda/30 text-tinta; }
+
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); opacity: 0.6; }
+}
+
+/* ------------------------------------------------------------------ componentes */
+@layer components {
+
+    /* Alpine: oculta lo que aun no ha inicializado */
+    [x-cloak] { display: none !important; }
+
+    /* ---------- Estructura ---------- */
+    .marco {
+        @apply relative mx-auto flex min-h-screen w-full max-w-md flex-col;
+        min-height: 100dvh;
+    }
+    @screen md {
+        .marco { @apply border-x border-borde bg-fondo shadow-suave; }
+    }
+    .contenido { @apply flex-1 space-y-7 px-5 pb-24 pt-2; }
+
+    .barra-superior {
+        @apply sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-transparent bg-fondo/75 px-4 backdrop-blur-xl;
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+    .barra-superior-titulo { @apply truncate text-[1.05rem] font-semibold; }
+
+    /* ---------- Tarjetas (superficies de cristal suave) ---------- */
+    .tarjeta { @apply rounded-2xl border border-borde bg-superficie p-4 backdrop-blur-sm; }
+    .tarjeta-enlace { @apply tarjeta block transition hover:border-borde-fuerte hover:bg-superficie-alta active:scale-[0.99]; }
+    .tarjeta-fila { @apply flex items-center justify-between gap-3; }
+    .tarjeta-detalle { @apply mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-tinta-suave; }
+    .tarjeta-detalle > span + span::before { content: "·"; @apply mr-2 text-tinta-tenue; }
+    .inactiva { @apply opacity-50; }
+
+    /* ---------- Secciones ---------- */
+    .seccion-cabecera { @apply mb-3 flex items-baseline justify-between gap-3; }
+    .seccion-titulo { @apply text-[0.95rem] font-semibold text-tinta; }
+    .seccion-enlace { @apply text-xs font-semibold text-esmeralda hover:text-esmeralda-claro; }
+    .titulo-pagina { @apply text-2xl font-bold tracking-tight; }
+    .nota { @apply text-xs text-tinta-suave; }
+    .ayuda { @apply text-xs leading-snug text-tinta-tenue; }
+    .migas { @apply text-xs font-medium text-tinta-suave; }
+    .migas a { @apply hover:text-tinta; }
+    .migas a::before { content: "‹ "; }
+
+    /* ---------- Botones ---------- */
+    .boton {
+        @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold
+               transition duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60;
+    }
+    .boton-principal { @apply bg-esmeralda text-[#03231A] shadow-brillo hover:bg-esmeralda-claro; }
+    .boton-claro { @apply border border-borde-fuerte bg-white/[0.04] text-tinta hover:bg-white/[0.08]; }
+    .boton-peligro { @apply border border-coral/25 bg-coral/10 text-coral-claro hover:bg-coral/20; }
+    .boton-pequeno { @apply rounded-lg px-3 py-2 text-xs; }
+    .boton-bloque { @apply w-full; }
+    .boton-icono {
+        @apply inline-grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-borde bg-superficie text-tinta
+               transition hover:bg-superficie-alta active:scale-95;
+    }
+    .enlace { @apply text-sm font-semibold text-esmeralda hover:text-esmeralda-claro; }
+    .enlace-peligro { @apply text-sm font-semibold text-coral-claro hover:text-coral; }
+    button.enlace, button.enlace-peligro { @apply bg-transparent p-0; }
+
+    .spinner {
+        @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-2px];
+    }
+
+    /* ---------- Formularios ---------- */
+    .formulario { @apply grid gap-1.5; }
+    .formulario > label:not(.casilla),
+    .etiqueta { @apply mt-2.5 block text-xs font-semibold text-tinta-suave first:mt-0; }
+    .campo,
+    .formulario :is(input[type="text"], input[type="number"], input[type="date"], input[type="password"], select, textarea) {
+        @apply block w-full rounded-xl border border-borde-fuerte bg-white/[0.03] px-3.5 py-3 text-[15px] text-tinta
+               placeholder:text-tinta-tenue transition focus:border-esmeralda/60 focus:bg-white/[0.05] focus:outline-none
+               focus:ring-2 focus:ring-esmeralda/20;
+    }
+    select.campo, .formulario select {
+        @apply appearance-none bg-no-repeat pr-10;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239DAAA2'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+        background-position: right 0.75rem center;
+        background-size: 1.1rem;
+    }
+    select option, select optgroup { @apply bg-fondo-panel text-tinta; }
+    .entrada-monto { @apply font-semibold tabular-nums tracking-tight; }
+    .entrada-monto-grande { @apply !py-4 !text-2xl; }
+    .con-error { @apply !border-coral/70 !ring-coral/20; }
+    .error-campo { @apply text-xs font-medium text-coral-claro; }
+    .formulario > .boton { @apply mt-4; }
+    .formulario > .boton + .boton { @apply mt-1; }
+    .casilla { @apply mt-2 flex items-center gap-3 text-sm text-tinta-suave; }
+    .casilla input[type="checkbox"] { @apply h-5 w-5 rounded-md accent-esmeralda; }
+    .grupo { @apply mt-3 grid gap-1.5 rounded-2xl border border-borde p-4; }
+    .grupo > legend { @apply px-1 text-xs font-semibold text-tinta-suave; }
+    .grupo > label { @apply mt-2 block text-xs font-semibold text-tinta-suave first-of-type:mt-0; }
+    .en-linea { @apply flex items-center gap-2; }
+    .en-linea > input, .en-linea > select { @apply min-w-0 flex-1; }
+    .formulario-accion { @apply inline; }
+
+    /* Control segmentado (Gasto / Ingreso) */
+    .segmentos { @apply grid grid-flow-col auto-cols-fr gap-1 rounded-xl border border-borde bg-black/20 p-1; }
+    .segmento {
+        @apply rounded-lg px-3 py-2 text-center text-sm font-semibold text-tinta-suave transition hover:text-tinta;
+    }
+    .segmento-activo { @apply bg-white/[0.08] text-tinta shadow-sm; }
+    .segmento-activo.segmento-gasto { @apply bg-coral/15 text-coral-claro; }
+    .segmento-activo.segmento-ingreso { @apply bg-esmeralda/15 text-esmeralda-claro; }
+
+    /* ---------- Avisos ---------- */
+    .aviso { @apply rounded-xl border border-borde bg-superficie px-4 py-3 text-sm text-tinta-suave; }
+    .aviso-exito { @apply border-esmeralda/25 bg-esmeralda/10 text-esmeralda-claro; }
+    .aviso-error { @apply border-coral/25 bg-coral/10 text-coral-claro; }
+
+    .vacio { @apply rounded-2xl border border-dashed border-borde-fuerte px-5 py-6 text-center text-sm text-tinta-suave; }
+    .vacio a { @apply font-semibold text-esmeralda; }
+
+    /* ---------- Montos ---------- */
+    .monto-ingreso { @apply text-esmeralda; }
+    .monto-gasto { @apply text-coral-claro; }
+    .monto-neutro { @apply text-tinta-suave; }
+    .cifras { @apply grid grid-cols-2 gap-2.5; }
+    .cifras > div { @apply rounded-2xl border border-borde bg-superficie px-4 py-3; }
+    .cifras dt { @apply text-[11px] font-medium uppercase tracking-wider text-tinta-tenue; }
+    .cifras dd { @apply mt-0.5 text-base font-bold tabular-nums tracking-tight; }
+    .cifras-compactas > div { @apply px-3 py-2; }
+    .cifras-compactas dd { @apply text-sm; }
+
+    .saldo-hero { @apply text-[2.85rem] font-extrabold leading-none tracking-tight tabular-nums sm:text-5xl; }
+    .pulso-sube { @apply animate-pulso-sube; }
+    .pulso-baja { @apply animate-pulso-baja; }
+    .chip { @apply inline-flex items-center gap-1.5 rounded-full border border-borde bg-superficie px-3 py-1 text-xs text-tinta-suave; }
+    .chip strong { @apply font-semibold tabular-nums text-tinta; }
+
+    /* ---------- Barras de progreso ---------- */
+    .barra { @apply mt-2 block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-white/[0.06]; }
+    .barra::-webkit-progress-bar { @apply rounded-full bg-white/[0.06]; }
+    .barra::-webkit-progress-value { @apply rounded-full bg-esmeralda transition-all duration-500; }
+    .barra::-moz-progress-bar { @apply rounded-full bg-esmeralda; }
+    .barra-alerta::-webkit-progress-value { @apply bg-ambar; }
+    .barra-alerta::-moz-progress-bar { @apply bg-ambar; }
+    .barra-excedida::-webkit-progress-value { @apply bg-coral; }
+    .barra-excedida::-moz-progress-bar { @apply bg-coral; }
+
+    /* ---------- Botones rapidos ---------- */
+    .rapido {
+        @apply relative flex w-full flex-col items-start gap-1 overflow-hidden rounded-2xl border border-borde bg-superficie
+               p-3.5 text-left transition duration-150 hover:border-borde-fuerte hover:bg-superficie-alta active:scale-[0.97]
+               disabled:cursor-wait;
+    }
+    .rapido::after {
+        content: "";
+        @apply pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full opacity-60 blur-2xl;
+    }
+    .rapido-ingreso::after { @apply bg-esmeralda/25; }
+    .rapido-gasto::after { @apply bg-coral/20; }
+    .rapido-nombre { @apply line-clamp-1 text-sm font-semibold text-tinta; }
+    .rapido-monto { @apply text-lg font-bold tabular-nums tracking-tight; }
+    .rapido-categoria { @apply line-clamp-1 text-[11px] text-tinta-tenue; }
+    .rapido-cargando {
+        @apply absolute inset-0 grid place-items-center bg-fondo/70 text-esmeralda backdrop-blur-[2px];
+    }
+    .rapido-nuevo {
+        @apply flex min-h-[5.75rem] w-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed
+               border-borde-fuerte text-xs font-semibold text-tinta-suave transition hover:border-esmeralda/50 hover:text-esmeralda;
+    }
+    .rapido-quitar {
+        @apply absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full border border-coral/30 bg-fondo
+               text-coral-claro shadow-suave;
+    }
+
+    /* ---------- Filas de movimientos y listas ---------- */
+    .lista { @apply divide-y divide-borde overflow-hidden rounded-2xl border border-borde bg-superficie; }
+    .fila-mov { @apply flex items-start justify-between gap-3 px-4 py-3.5; }
+    .fila-mov-icono { @apply mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-bold; }
+    .fila-mov-info { @apply min-w-0 flex-1; }
+    .fila-mov-titulo { @apply truncate text-sm font-semibold text-tinta; }
+    .fila-mov-detalle { @apply mt-0.5 flex flex-wrap gap-x-1.5 text-xs text-tinta-tenue; }
+    .fila-mov-detalle > span + span::before { content: "·"; @apply mr-1.5; }
+    .fila-mov-lado { @apply shrink-0 text-right; }
+    .fila-mov-monto { @apply text-sm font-bold tabular-nums; }
+    .fila-mov-acciones { @apply mt-1 flex justify-end gap-3 text-xs; }
+    .fila-mov-acciones a { @apply font-semibold text-tinta-suave hover:text-tinta; }
+    .fila-mov-acciones .enlace-peligro { @apply text-xs; }
+
+    .fila-cajita { @apply flex items-center justify-between gap-3 px-4 py-3 text-sm transition hover:bg-superficie-alta; }
+
+    .fila-edicion { @apply flex items-center gap-3 px-4 py-3; }
+    .fila-edicion > form.en-linea { @apply flex-1; }
+    .fila-edicion input[type="text"] { @apply campo py-2 text-sm; }
+
+    .acciones-fila { @apply mt-3 flex flex-wrap items-center gap-4 border-t border-borde pt-3 text-sm; }
+    .acciones-fila a { @apply font-semibold text-tinta-suave hover:text-tinta; }
+
+    /* Menu de navegacion en lista (pagina Mas, menu lateral) */
+    .menu { @apply lista; }
+    .menu a { @apply flex flex-col px-4 py-3.5 transition hover:bg-superficie-alta; }
+    .menu a strong { @apply text-sm font-semibold text-tinta; }
+    .menu a span { @apply text-xs text-tinta-tenue; }
+
+    .menu-enlace {
+        @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-tinta-suave transition
+               hover:bg-white/[0.05] hover:text-tinta;
+    }
+    .menu-enlace svg { @apply h-5 w-5 shrink-0 opacity-80; }
+    .menu-enlace-activo { @apply bg-esmeralda/10 text-esmeralda-claro hover:bg-esmeralda/15 hover:text-esmeralda-claro; }
+    .menu-grupo { @apply mb-1 mt-5 px-3 text-[11px] font-semibold uppercase tracking-wider text-tinta-tenue; }
+
+    /* Pestanas */
+    .pestanas { @apply segmentos; }
+    .pestanas a { @apply segmento; }
+    .pestanas a.activa { @apply segmento-activo; }
+
+    .paginacion { @apply flex justify-between gap-3; }
+    .paginacion a { @apply boton boton-claro boton-pequeno; }
+
+    /* Desplegables (details/summary) */
+    .desplegable { @apply tarjeta p-0; }
+    .desplegable > summary {
+        @apply flex cursor-pointer list-none items-center justify-between px-4 py-3.5 text-sm font-semibold text-tinta;
+    }
+    .desplegable > summary::-webkit-details-marker { display: none; }
+    .desplegable > summary::after { content: "+"; @apply text-lg leading-none text-tinta-suave transition; }
+    .desplegable[open] > summary::after { @apply rotate-45; }
+    .desplegable > :not(summary) { @apply px-4 pb-4; }
+
+    /* Cuenta compartida (solo lectura) */
+    .banner-compartido { @apply tarjeta space-y-3 border-ambar/20 bg-ambar/[0.06] text-sm; }
+    .banner-compartido > a { @apply enlace text-xs; }
+
+    /* ---------- Calendario ---------- */
+    .calendario { @apply tarjeta p-2.5; }
+    .calendario-semana { @apply grid grid-cols-7 gap-1; }
+    .calendario-semana + .calendario-semana { @apply mt-1; }
+    .calendario-cabecera span { @apply py-1 text-center text-[11px] font-semibold text-tinta-tenue; }
+    .dia {
+        @apply flex aspect-[4/5] flex-col items-center rounded-xl border border-transparent pt-1 text-[10px] leading-tight
+               transition hover:bg-superficie-alta;
+    }
+    .dia-numero { @apply mb-0.5 text-xs font-semibold text-tinta-suave; }
+    .dia-ingreso { @apply font-semibold tabular-nums text-esmeralda; }
+    .dia-gasto { @apply font-semibold tabular-nums text-coral-claro; }
+    .dia-fuera { @apply opacity-30; }
+    .dia-producido { @apply bg-esmeralda/[0.08]; }
+    .dia-sin-registro { @apply border-dashed border-ambar/30; }
+    .dia-hoy { @apply border-esmeralda/60; }
+    .dia-hoy .dia-numero { @apply text-esmeralda; }
+    .leyenda { @apply flex flex-wrap gap-x-4 gap-y-1 text-xs text-tinta-suave; }
+    .leyenda li { @apply flex items-center gap-1.5; }
+    .leyenda-muestra { @apply inline-block h-3 w-3 rounded border border-transparent; }
+    .leyenda-producido { @apply bg-esmeralda/30; }
+    .leyenda-sin-registro { @apply border-dashed border-ambar/60; }
+    .leyenda-hoy { @apply border-esmeralda; }
+
+    /* Reparto */
+    .linea-reparto label { @apply flex items-center gap-3 rounded-xl border border-borde bg-superficie px-3 py-2; }
+    .linea-reparto-nombre { @apply flex min-w-0 flex-1 flex-col text-sm; }
+    .linea-reparto-nombre span { @apply text-xs text-tinta-tenue; }
+    .linea-reparto input { @apply campo max-w-[9.5rem] py-2 text-right; }
+
+    /* ---------- Modales y panel lateral ---------- */
+    .velo { @apply fixed inset-0 bg-black/55 backdrop-blur-md; }
+    .modal-panel {
+        @apply relative max-h-[88dvh] w-full max-w-md overflow-y-auto rounded-3xl border border-borde-fuerte bg-fondo-panel/95
+               p-5 shadow-suave backdrop-blur-xl;
+    }
+    .modal-cabecera { @apply mb-4 flex items-start justify-between gap-3; }
+    .modal-titulo { @apply text-lg font-bold tracking-tight; }
+
+    /* ---------- Avisos flotantes ---------- */
+    .tostada {
+        @apply pointer-events-auto flex w-full items-center gap-3 rounded-2xl border border-borde-fuerte bg-fondo-panel/95
+               px-4 py-3 text-sm shadow-suave backdrop-blur-xl;
+    }
+    .tostada-exito { @apply border-esmeralda/25; }
+    .tostada-error { @apply border-coral/30; }
+
+
+    /* ---------- Pantallas de acceso (login, registro, recuperar, error, offline) ---------- */
+    .pagina-acceso { @apply flex flex-col overflow-x-hidden; }
+    .nubes { @apply pointer-events-none fixed inset-0 -z-0 overflow-hidden; }
+    .nubes span { @apply absolute rounded-full blur-3xl; animation: flotar 24s ease-in-out infinite alternate; }
+    .nubes span:nth-child(1) { @apply -left-24 -top-16 h-72 w-72 bg-esmeralda/[0.13]; }
+    .nubes span:nth-child(2) { @apply -right-28 top-24 h-64 w-64 bg-emerald-200/[0.05]; animation-duration: 30s; animation-delay: -8s; }
+    .nubes span:nth-child(3) { @apply bottom-0 left-1/4 h-56 w-56 bg-esmeralda/[0.06]; animation-duration: 36s; animation-delay: -14s; }
+    @keyframes flotar {
+        from { transform: translate3d(-1.5rem, 0, 0) scale(1); }
+        to { transform: translate3d(2rem, 1rem, 0) scale(1.1); }
+    }
+    .acceso { @apply relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 py-10; }
+    .acceso-cabecera { @apply mb-7 text-center; }
+    .acceso-logo { @apply mx-auto mb-4 h-16 w-16 rounded-[1.4rem] shadow-brillo ring-1 ring-borde-fuerte; }
+    .acceso-marca { @apply text-4xl font-extrabold tracking-tight text-tinta; }
+    .acceso-lema { @apply mx-auto mt-2 max-w-[17rem] text-sm text-tinta-suave; }
+    .acceso-hoja { @apply rounded-3xl border border-borde bg-superficie p-6 shadow-suave backdrop-blur-xl; }
+    .acceso-titulo { @apply mb-4 text-xl font-bold tracking-tight; }
+    .acceso-subtitulo { @apply mb-5 text-sm text-tinta-suave; }
+    .acceso-hoja > .aviso { @apply mb-4; }
+    .formulario-acceso { @apply grid gap-3; }
+    .formulario-acceso > .aviso { @apply mb-1; }
+    .formulario-acceso > .boton { @apply mt-2; }
+    .formulario-acceso .error-campo { @apply -mt-1.5 px-1; }
+    .campo-flotante { @apply relative; }
+    .campo-flotante input {
+        @apply campo h-14 px-4 pb-2 pt-6;
+    }
+    .campo-flotante label {
+        @apply pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-tinta-tenue transition-all duration-150;
+    }
+    .campo-flotante input:focus + label,
+    .campo-flotante input:not(:placeholder-shown) + label { @apply top-4 text-[11px] font-semibold text-tinta-suave; }
+    .campo-contrasena input { @apply pr-16; }
+    .campo-pin input { @apply text-lg font-bold tracking-[0.5em]; }
+    .ver-contrasena {
+        @apply absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-tinta-suave
+               transition hover:bg-white/5 hover:text-tinta;
+    }
+    .interruptor { @apply flex items-center justify-between gap-3 py-1 text-sm text-tinta-suave; }
+    .interruptor input[type="checkbox"] {
+        @apply relative h-6 w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-white/10 transition
+               before:absolute before:left-0.5 before:top-0.5 before:h-5 before:w-5 before:rounded-full before:bg-tinta
+               before:transition checked:bg-esmeralda checked:before:translate-x-5;
+    }
+    .acceso-enlaces { @apply mt-5 flex flex-col items-center gap-2 text-sm; }
+    .acceso-enlaces a { @apply font-semibold text-esmeralda hover:text-esmeralda-claro; }
+    .acceso-enlaces .enlace-discreto, .acceso-alterno { @apply font-normal text-tinta-suave; }
+    .error-codigo { @apply text-6xl font-extrabold tabular-nums text-esmeralda/80; }
+    .error-titulo { @apply mb-6 mt-2 text-lg font-semibold; }
+
+    /* ---------- Graficas ---------- */
+    .grafica-lienzo { @apply relative h-56 w-full; }
+}

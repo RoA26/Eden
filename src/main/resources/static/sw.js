@@ -2,13 +2,13 @@
 // Politica: los archivos estaticos (CSS, JS, iconos) se guardan en cache para
 // que la app abra rapido. Las paginas con datos financieros NUNCA se guardan:
 // siempre se piden al servidor y, si no hay conexion, se muestra offline.html.
-const VERSION = 'eden-v5-1';
+const VERSION = 'eden-v6-1';
 const ESTATICOS = [
     '/offline.html',
-    '/css/estilos.css',
-    '/css/acceso.css',
-    '/js/app.js',
+    '/css/eden.css',
+    '/js/eden.js',
     '/js/tablero.js',
+    '/js/vendor/alpine-csp.min.js',
     '/js/vendor/chart.umd.js',
     '/iconos/icono-192.png',
     '/iconos/icono-512.png'

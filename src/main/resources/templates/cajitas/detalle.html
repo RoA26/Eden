@@ -1,101 +1,111 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Cajita')}"></head>
-<body>
-<main class="contenido">
-    <p class="migas"><a th:href="@{/cajitas}">Cajitas</a></p>
-    <header class="encabezado">
-        <h1 th:text="${cajita.nombre}">Daniela</h1>
-        <p class="encabezado-saludo">
-            <span th:text="${cajita.proposito.etiqueta}">Capital</span>,
-            <span th:text="${cajita.esResto} ? 'recibe lo que sobra' : ${@formato.porcentaje(cajita.porcentaje)} + ' de cada reparto'">40%</span>
-            <span th:unless="${cajita.activa}">(desactivada)</span>
-        </p>
-    </header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion(${cajita.nombre}, 'cajitas')}"></th:block>
 
-    <div th:replace="~{fragmentos/base :: avisos}"></div>
+    <main class="contenido">
+        <p class="migas"><a th:href="@{/cajitas}">Cajitas</a></p>
+        <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-    <section class="disponible disponible-compacto">
-        <p class="disponible-etiqueta">Saldo</p>
-        <p class="disponible-monto" th:text="${@formato.pesos(cajita.saldo)}">$ 0</p>
-    </section>
+        <section class="pt-1">
+            <p class="text-xs font-semibold uppercase tracking-wider text-tinta-tenue">Saldo</p>
+            <p class="saldo-hero mt-2" th:text="${@formato.pesos(cajita.saldo)}">$ 0</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <span class="chip" th:text="${cajita.proposito.etiqueta}">Capital</span>
+                <span class="chip" th:text="${cajita.esResto} ? 'Recibe lo que sobra' : ${@formato.porcentaje(cajita.porcentaje)} + ' de cada reparto'">40%</span>
+                <span class="chip text-coral-claro" th:unless="${cajita.activa}">Desactivada</span>
+            </div>
+        </section>
 
-    <section class="bloque" th:if="${cajita.activa}">
-        <h2>Registrar operación</h2>
-        <form th:action="@{/cajitas/{id}/operacion(id=${cajita.id})}" th:object="${operacion}" method="post"
-              class="formulario" novalidate>
-            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+        <section th:if="${cajita.activa}">
+            <h2 class="seccion-titulo mb-3">Registrar operación</h2>
+            <form th:action="@{/cajitas/{id}/operacion(id=${cajita.id})}" th:object="${operacion}" method="post"
+                  class="formulario tarjeta p-5" novalidate>
+                <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
 
-            <label for="operacion">Operación</label>
-            <select id="operacion" th:field="*{operacion}">
-                <option th:each="op : ${operaciones}" th:value="${op}"
-                        th:text="${op.name() == 'APORTE'} ? 'Aportar desde el disponible'
-                               : (${op.name() == 'RETIRO'} ? 'Retirar al disponible'
-                               : (${op.name() == 'RENDIMIENTO'} ? 'Registrar rendimiento (intereses)'
-                               : 'Saldo que ya tenía antes de Eden'))">Aportar</option>
-            </select>
-            <p class="ayuda" th:text="'Disponible por repartir: ' + ${@formato.pesos(disponible)}"></p>
+                <label for="operacion">Operación</label>
+                <select id="operacion" th:field="*{operacion}">
+                    <option th:each="op : ${operaciones}" th:value="${op}"
+                            th:text="${op.name() == 'APORTE'} ? 'Aportar desde el disponible'
+                                   : (${op.name() == 'RETIRO'} ? 'Retirar al disponible'
+                                   : (${op.name() == 'RENDIMIENTO'} ? 'Registrar rendimiento (intereses)'
+                                   : 'Saldo que ya tenía antes de Eden'))">Aportar</option>
+                </select>
+                <p class="ayuda" th:text="'Disponible por repartir: ' + ${@formato.pesos(disponible)}"></p>
 
-            <label for="monto">Monto</label>
-            <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" class="entrada-monto"
-                   th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="grid gap-1.5">
+                        <label for="monto" class="etiqueta">Monto</label>
+                        <input id="monto" type="text" inputmode="decimal" th:field="*{monto}" class="campo entrada-monto"
+                               th:classappend="${#fields.hasErrors('monto')} ? 'con-error'">
+                    </div>
+                    <div class="grid gap-1.5">
+                        <label for="fecha" class="etiqueta">Fecha</label>
+                        <input id="fecha" type="date" th:field="*{fecha}" class="campo"
+                               th:classappend="${#fields.hasErrors('fecha')} ? 'con-error'">
+                    </div>
+                </div>
+                <p class="error-campo" th:if="${#fields.hasErrors('monto')}" th:errors="*{monto}"></p>
+                <p class="error-campo" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></p>
 
-            <label for="fecha">Fecha</label>
-            <input id="fecha" type="date" th:field="*{fecha}" th:classappend="${#fields.hasErrors('fecha')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}"></p>
+                <label for="descripcionOperacion">Descripción (opcional)</label>
+                <input id="descripcionOperacion" type="text" th:field="*{descripcion}" maxlength="200">
 
-            <label for="descripcionOperacion">Descripción (opcional)</label>
-            <input id="descripcionOperacion" type="text" th:field="*{descripcion}" maxlength="200">
+                <button type="submit" class="boton boton-principal">Registrar</button>
+            </form>
+        </section>
 
-            <button type="submit" class="boton boton-principal">Registrar</button>
-        </form>
-    </section>
+        <section>
+            <h2 class="seccion-titulo mb-3">Movimientos de la cajita</h2>
+            <p class="vacio" th:if="${movimientos.isEmpty()}">Esta cajita aún no tiene movimientos.</p>
+            <div class="lista" th:unless="${movimientos.isEmpty()}">
+                <th:block th:each="m : ${movimientos}">
+                    <article th:replace="~{fragmentos/componentes :: filaMovimiento(${m}, '/cajitas/' + ${cajita.id})}"></article>
+                </th:block>
+            </div>
+        </section>
 
-    <section class="bloque">
-        <h2>Movimientos de la cajita</h2>
-        <p class="vacio" th:if="${movimientos.isEmpty()}">Esta cajita aún no tiene movimientos.</p>
-        <th:block th:each="m : ${movimientos}">
-            <article th:replace="~{fragmentos/base :: filaMovimiento(${m}, '/cajitas/' + ${cajita.id})}"></article>
-        </th:block>
-    </section>
+        <details class="desplegable" th:attr="open=${abrirEdicion != null} ? 'open' : null">
+            <summary>Editar cajita</summary>
+            <form th:action="@{/cajitas/{id}/editar(id=${cajita.id})}" th:object="${formulario}" method="post"
+                  class="formulario" novalidate>
+                <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
 
-    <details class="bloque desplegable" th:attr="open=${abrirEdicion != null} ? 'open' : null">
-        <summary>Editar cajita</summary>
-        <form th:action="@{/cajitas/{id}/editar(id=${cajita.id})}" th:object="${formulario}" method="post"
-              class="formulario" novalidate>
-            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+                <label for="nombre">Nombre</label>
+                <input id="nombre" type="text" th:field="*{nombre}" maxlength="40"
+                       th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
+                <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
 
-            <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" th:field="*{nombre}" maxlength="40"
-                   th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+                <label for="proposito">Propósito</label>
+                <select id="proposito" th:field="*{proposito}">
+                    <option th:each="p : ${propositos}" th:value="${p}" th:text="${p.etiqueta}">Capital</option>
+                </select>
 
-            <label for="proposito">Propósito</label>
-            <select id="proposito" th:field="*{proposito}">
-                <option th:each="p : ${propositos}" th:value="${p}" th:text="${p.etiqueta}">Capital</option>
-            </select>
+                <label for="porcentaje">Porcentaje de cada reparto</label>
+                <input id="porcentaje" type="number" min="0" max="100" step="0.5" th:field="*{porcentaje}"
+                       th:classappend="${#fields.hasErrors('porcentaje')} ? 'con-error'">
+                <p class="error-campo" th:if="${#fields.hasErrors('porcentaje')}" th:errors="*{porcentaje}"></p>
 
-            <label for="porcentaje">Porcentaje de cada reparto</label>
-            <input id="porcentaje" type="number" min="0" max="100" step="0.5" th:field="*{porcentaje}"
-                   th:classappend="${#fields.hasErrors('porcentaje')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('porcentaje')}" th:errors="*{porcentaje}"></p>
+                <label class="casilla">
+                    <input type="checkbox" th:field="*{esResto}">
+                    Esta cajita recibe lo que sobra
+                </label>
 
-            <label class="casilla">
-                <input type="checkbox" th:field="*{esResto}">
-                Esta cajita recibe lo que sobra
-            </label>
+                <button type="submit" class="boton boton-principal">Guardar cambios</button>
+            </form>
 
-            <button type="submit" class="boton boton-principal">Guardar cambios</button>
-        </form>
+            <form th:action="@{/cajitas/{id}/estado(id=${cajita.id})}" method="post" class="mt-3"
+                  th:attr="data-confirmar=${cajita.activa} ? '¿Desactivar esta cajita?' : null">
+                <input type="hidden" name="activa" th:value="${!cajita.activa}">
+                <button type="submit" class="boton boton-bloque" th:classappend="${cajita.activa} ? 'boton-peligro' : 'boton-claro'"
+                        th:text="${cajita.activa} ? 'Desactivar cajita' : 'Activar cajita'">Desactivar</button>
+            </form>
+        </details>
+    </main>
 
-        <form th:action="@{/cajitas/{id}/estado(id=${cajita.id})}" method="post" class="formulario-accion"
-              th:attr="data-confirmar=${cajita.activa} ? '¿Desactivar esta cajita?' : null">
-            <input type="hidden" name="activa" th:value="${!cajita.activa}">
-            <button type="submit" class="boton boton-claro" th:text="${cajita.activa} ? 'Desactivar cajita' : 'Activar cajita'">Desactivar</button>
-        </form>
-    </details>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

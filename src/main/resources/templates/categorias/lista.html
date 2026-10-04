@@ -1,47 +1,52 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragmentos/base :: cabecera('Categorías')}"></head>
-<body>
-<main class="contenido">
-    <header class="encabezado"><h1>Categorías</h1></header>
+<body x-data="aplicacion" @keydown.escape.window="escape">
+<div class="marco">
+    <th:block th:replace="~{fragmentos/navegacion :: navegacion('Categorías', 'categorias')}"></th:block>
 
-    <div th:replace="~{fragmentos/base :: avisos}"></div>
+    <main class="contenido">
+        <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
-    <section class="bloque" th:each="tp : ${tipos}">
-        <h2 th:text="${tp.etiqueta}">Gasto personal</h2>
-        <th:block th:each="c : ${categorias}">
-            <div class="fila-edicion" th:if="${c.tipo == tp}" th:classappend="${!c.activa} ? 'inactiva'">
-                <form th:action="@{/categorias/{id}/renombrar(id=${c.id})}" method="post" class="en-linea">
-                    <input type="text" name="nombre" th:value="${c.nombre}" maxlength="50"
-                           aria-label="Nombre de la categoría" required>
-                    <button type="submit" class="boton boton-claro boton-pequeno">Guardar</button>
-                </form>
-                <form th:action="@{/categorias/{id}/estado(id=${c.id})}" method="post" class="formulario-accion">
-                    <input type="hidden" name="activa" th:value="${!c.activa}">
-                    <button type="submit" class="enlace" th:text="${c.activa} ? 'Desactivar' : 'Activar'">Desactivar</button>
-                </form>
+        <section th:each="tp : ${tipos}">
+            <h2 class="seccion-titulo mb-3" th:text="${tp.etiqueta}">Gasto personal</h2>
+            <div class="lista">
+                <th:block th:each="c : ${categorias}">
+                    <div class="fila-edicion" th:if="${c.tipo == tp}" th:classappend="${!c.activa} ? 'inactiva'">
+                        <form th:action="@{/categorias/{id}/renombrar(id=${c.id})}" method="post" class="en-linea">
+                            <input type="text" name="nombre" th:value="${c.nombre}" maxlength="50"
+                                   aria-label="Nombre de la categoría" required>
+                            <button type="submit" class="boton boton-claro boton-pequeno">Guardar</button>
+                        </form>
+                        <form th:action="@{/categorias/{id}/estado(id=${c.id})}" method="post" class="formulario-accion">
+                            <input type="hidden" name="activa" th:value="${!c.activa}">
+                            <button type="submit" class="enlace text-xs" th:text="${c.activa} ? 'Desactivar' : 'Activar'">Desactivar</button>
+                        </form>
+                    </div>
+                </th:block>
             </div>
-        </th:block>
-    </section>
+        </section>
 
-    <section class="bloque">
-        <h2>Nueva categoría</h2>
-        <form th:action="@{/categorias}" th:object="${formulario}" method="post" class="formulario" novalidate>
-            <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
-            <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" th:field="*{nombre}" maxlength="50"
-                   th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
-            <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
+        <section>
+            <h2 class="seccion-titulo mb-3">Nueva categoría</h2>
+            <form th:action="@{/categorias}" th:object="${formulario}" method="post" class="formulario tarjeta p-5" novalidate>
+                <p th:if="${#fields.hasGlobalErrors()}" class="aviso aviso-error" role="alert" th:text="${#fields.globalErrors()[0]}"></p>
+                <label for="nombre">Nombre</label>
+                <input id="nombre" type="text" th:field="*{nombre}" maxlength="50"
+                       th:classappend="${#fields.hasErrors('nombre')} ? 'con-error'">
+                <p class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
 
-            <label for="tipo">Tipo</label>
-            <select id="tipo" th:field="*{tipo}">
-                <option th:each="tp : ${tipos}" th:value="${tp}" th:text="${tp.etiqueta}">Gasto personal</option>
-            </select>
+                <label for="tipo">Tipo</label>
+                <select id="tipo" th:field="*{tipo}">
+                    <option th:each="tp : ${tipos}" th:value="${tp}" th:text="${tp.etiqueta}">Gasto personal</option>
+                </select>
 
-            <button type="submit" class="boton boton-principal">Crear categoría</button>
-        </form>
-    </section>
-</main>
-<nav th:replace="~{fragmentos/base :: navegacion('mas')}"></nav>
+                <button type="submit" class="boton boton-principal">Crear categoría</button>
+            </form>
+        </section>
+    </main>
+
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+</div>
 </body>
 </html>

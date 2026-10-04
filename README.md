@@ -18,13 +18,47 @@ com.eden
 └── excepcion     Excepciones de dominio
 ```
 
+## Interfaz ("Cozy Fintech", V6)
+
+Oscura y móvil primero: en escritorio el contenido vive en un marco central
+del ancho de un teléfono. Sin barra inferior: la hamburguesa abre un menú
+lateral sobre un fondo oscurecido y desenfocado.
+
+- **HTML**: Thymeleaf. Fragmentos reutilizables en `templates/fragmentos/`:
+  `base` (`<head>`), `navegacion` (cabecera y menú lateral), `componentes`
+  (fila de movimiento, tarjeta de cajita, botón rápido, modal, avisos) y
+  `modales` (formularios del tablero).
+- **Estilos**: Tailwind CSS **compilado** (no el CDN, que exigiría relajar la
+  CSP). Fuente en `frontend/estilos/eden.css` y `frontend/tailwind.config.js`;
+  el resultado `static/css/eden.css` se versiona, así que Maven y Docker no
+  necesitan Node.
+- **Reactividad**: Alpine.js en su build CSP (`static/js/vendor/alpine-csp.min.js`),
+  porque la política `script-src 'self'` no permite `eval`. Los componentes
+  están en `static/js/eden.js` y las plantillas solo nombran estados y métodos.
+- **Botones rápidos** (fricción cero): plantillas como «Moto $5.000» que
+  registran el movimiento con un toque (`POST /api/atajos/{id}/usar`), muestran
+  un spinner en el botón, animan el saldo total sin recargar y ofrecen "Deshacer".
+- **Mejora progresiva**: cada formulario conserva su `th:action` normal; con
+  JavaScript, Alpine lo intercepta y lo envía por fetch a `/api/...` (JSON, mismo
+  token CSRF). Sin JavaScript todo sigue funcionando con recargas.
+
+Después de cambiar plantillas o estilos, regenerar el CSS (requiere Node 18+):
+
+```
+cd frontend
+npm install        # la primera vez
+npm run css        # o npm run css:vigilar mientras se edita
+```
+
+`npm run vendor` vuelve a copiar Alpine desde `node_modules` al actualizarlo.
+
 El esquema de base de datos vive en `src/main/resources/db/migration`
 y lo aplica Flyway al arrancar. Una migración aplicada nunca se edita:
 los cambios van en un archivo nuevo (`V2__...sql`).
 
 ## Módulos (V2)
 
-- **Tablero** (`/inicio`): disponible por repartir, resumen del mes, estado de resultados por fuente, cajitas y gráficas (Chart.js servido localmente en `static/js/vendor`).
+- **Tablero** (`/inicio`): saldo total, botones rápidos, disponible por repartir, resumen del mes, estado de resultados por fuente, cajitas y gráficas (Chart.js servido localmente en `static/js/vendor`).
 - **Registro rápido** (`/registrar`): producido del día por fuente, con su costo opcional. Un solo producido por fuente y día (RN-01).
 - **Movimientos** (`/movimientos`): ingresos y gastos con filtros por fecha, tipo, categoría y fuente. Un gasto puede pagarse desde una cajita, lo que genera un retiro asociado (RN-06).
 - **Calendario** (`/calendario`): días con producido, montos del día y días sin registro de las fuentes diarias.

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+    Modales del tablero. Cada formulario conserva su th:action clasico (con el
+    token CSRF que agrega Thymeleaf) y Alpine lo intercepta (@submit.prevent)
+    para enviarlo por fetch al endpoint JSON de data-api.
+    Requiere en el modelo: categoriasIngreso, categoriasGasto, categoriasCosto,
+    fuentes, cajitasActivas, tiposCategoria y hoy (ver InicioController).
+-->
+<th:block th:fragment="modales">
+    <div th:replace="~{fragmentos/componentes :: modal('movimiento', 'Registrar movimiento', ~{fragmentos/modales :: formMovimiento})}"></div>
+    <div th:replace="~{fragmentos/componentes :: modal('atajo', 'Nuevo botón rápido', ~{fragmentos/modales :: formAtajo})}"></div>
+    <div th:replace="~{fragmentos/componentes :: modal('categoria', 'Nueva categoría', ~{fragmentos/modales :: formCategoria})}"></div>
+</th:block>
+
+<!-- Selector Gasto / Ingreso (radios accesibles con aspecto de control segmentado) -->
+<div th:fragment="selectorTipo" class="segmentos" role="radiogroup" aria-label="Tipo de movimiento">
+    <label class="segmento segmento-gasto cursor-pointer" :class="esGasto() ? 'segmento-activo' : ''">
+        <input type="radio" name="tipo" value="GASTO" class="sr-only" checked @change="elegirGasto">Gasto
+    </label>
+    <label class="segmento segmento-ingreso cursor-pointer" :class="esIngreso() ? 'segmento-activo' : ''">
+        <input type="radio" name="tipo" value="INGRESO" class="sr-only" @change="elegirIngreso">Ingreso
+    </label>
+</div>
+
+<!--
+    Categoria segun el tipo elegido. Hay un selector por tipo y solo el visible
+    queda habilitado (los campos deshabilitados no se envian). Los data-opciones-categoria
+    permiten agregar al vuelo las categorias creadas desde el modal de categoria.
+-->
+<th:block th:fragment="selectorCategoria(prefijo)">
+    <label th:for="${prefijo} + '-categoria-gasto'" x-show="esGasto()">Categoría</label>
+    <select th:id="${prefijo} + '-categoria-gasto'" name="idCategoria" x-show="esGasto()" :disabled="esIngreso()"
+            :class="claseError('idCategoria')">
+        <optgroup label="Gastos personales" data-opciones-categoria="GASTO">
+            <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}">Alimentación</option>
+        </optgroup>
+        <optgroup label="Costos operativos (de una fuente)" data-opciones-categoria="COSTO_OPERATIVO">
+            <option th:each="c : ${categoriasCosto}" th:value="${c.id}" th:text="${c.nombre}">Combustible</option>
+        </optgroup>
+    </select>
+    <label th:for="${prefijo} + '-categoria-ingreso'" x-cloak x-show="esIngreso()">Categoría</label>
+    <select th:id="${prefijo} + '-categoria-ingreso'" name="idCategoria" x-cloak x-show="esIngreso()" disabled
+            :disabled="esGasto()" :class="claseError('idCategoria')" data-opciones-categoria="INGRESO">
+        <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}">Producido</option>
+    </select>
+    <p class="error-campo" data-error-de="idCategoria" x-cloak x-show="tieneError('idCategoria')" x-text="errores.idCategoria"></p>
+    <button type="button" class="enlace justify-self-start text-xs" @click="$store.ui.abrirModal('categoria', $store.ui.modal)">
+        + Crear una categoría
+    </button>
+</th:block>
+
+<!-- Registrar un ingreso o gasto sin atajo -->
+<form th:fragment="formMovimiento" th:action="@{/movimientos/nuevo}" method="post" class="formulario" novalidate
+      x-data="formularioConTipo" @submit.prevent="enviar"
+      th:attr="data-api=@{/api/movimientos}" data-refrescar="ultimos,resumenMes">
+    <p class="aviso aviso-error" role="alert" x-cloak x-show="errorGeneral" x-text="errorGeneral"></p>
+
+    <div th:replace="~{fragmentos/modales :: selectorTipo}"></div>
+
+    <label for="mov-monto">Monto</label>
+    <input id="mov-monto" name="monto" type="text" inputmode="decimal" autocomplete="off" placeholder="$ 0"
+           class="entrada-monto entrada-monto-grande" :class="claseError('monto')" autofocus>
+    <p class="error-campo" data-error-de="monto" x-cloak x-show="tieneError('monto')" x-text="errores.monto"></p>
+
+    <th:block th:replace="~{fragmentos/modales :: selectorCategoria('mov')}"></th:block>
+
+    <label for="mov-fuente">Fuente</label>
+    <select id="mov-fuente" name="idFuente" :class="claseError('idFuente')">
+        <option value="">Ninguna</option>
+        <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
+    </select>
+    <p class="ayuda" x-show="esGasto()">Obligatoria solo para costos operativos.</p>
+    <p class="error-campo" data-error-de="idFuente" x-cloak x-show="tieneError('idFuente')" x-text="errores.idFuente"></p>
+
+    <th:block th:unless="${cajitasActivas == null or cajitasActivas.isEmpty()}">
+        <label for="mov-cajita" x-show="esGasto()">Pagado desde</label>
+        <select id="mov-cajita" name="idCajitaOrigen" x-show="esGasto()" :disabled="esIngreso()"
+                :class="claseError('idCajitaOrigen')">
+            <option value="">El disponible</option>
+            <option th:each="c : ${cajitasActivas}" th:value="${c.id}"
+                    th:text="${c.nombre} + ' (' + ${@formato.pesos(c.saldo)} + ')'">Atenea</option>
+        </select>
+        <p class="error-campo" data-error-de="idCajitaOrigen" x-cloak x-show="tieneError('idCajitaOrigen')"
+           x-text="errores.idCajitaOrigen"></p>
+    </th:block>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div class="grid gap-1.5">
+            <label for="mov-fecha" class="etiqueta">Fecha</label>
+            <input id="mov-fecha" name="fecha" type="date" class="campo" th:value="${hoy}" th:attr="max=${hoy}"
+                   :class="claseError('fecha')">
+        </div>
+        <div class="grid gap-1.5">
+            <label for="mov-descripcion" class="etiqueta">Nota (opcional)</label>
+            <input id="mov-descripcion" name="descripcion" type="text" class="campo" maxlength="200" placeholder="Ej. almuerzo">
+        </div>
+    </div>
+    <p class="error-campo" data-error-de="fecha" x-cloak x-show="tieneError('fecha')" x-text="errores.fecha"></p>
+    <p class="error-campo" data-error-de="descripcion" x-cloak x-show="tieneError('descripcion')" x-text="errores.descripcion"></p>
+
+    <button type="submit" class="boton boton-principal boton-bloque" :disabled="enviando">
+        <span class="spinner" x-cloak x-show="enviando"></span>Guardar
+    </button>
+</form>
+
+<!-- Crear un boton rapido (plantilla de registro de un toque) -->
+<form th:fragment="formAtajo" th:action="@{/atajos}" method="post" class="formulario" novalidate
+      x-data="formularioConTipo" @submit.prevent="enviar"
+      th:attr="data-api=@{/api/atajos}" data-refrescar="atajos">
+    <p class="ayuda -mt-2 mb-2">Un toque en el botón registra el movimiento con la fecha de hoy.</p>
+    <p class="aviso aviso-error" role="alert" x-cloak x-show="errorGeneral" x-text="errorGeneral"></p>
+
+    <div th:replace="~{fragmentos/modales :: selectorTipo}"></div>
+
+    <div class="grid grid-cols-[1fr_auto] gap-3">
+        <div class="grid gap-1.5">
+            <label for="atajo-nombre" class="etiqueta">Nombre del botón</label>
+            <input id="atajo-nombre" name="nombre" type="text" class="campo" maxlength="30" placeholder="Ej. Moto"
+                   :class="claseError('nombre')" autofocus>
+        </div>
+        <div class="grid w-36 gap-1.5">
+            <label for="atajo-monto" class="etiqueta">Monto</label>
+            <input id="atajo-monto" name="monto" type="text" inputmode="decimal" class="campo entrada-monto"
+                   autocomplete="off" placeholder="5.000" :class="claseError('monto')">
+        </div>
+    </div>
+    <p class="error-campo" data-error-de="nombre" x-cloak x-show="tieneError('nombre')" x-text="errores.nombre"></p>
+    <p class="error-campo" data-error-de="monto" x-cloak x-show="tieneError('monto')" x-text="errores.monto"></p>
+
+    <th:block th:replace="~{fragmentos/modales :: selectorCategoria('atajo')}"></th:block>
+
+    <label for="atajo-fuente">Fuente (opcional)</label>
+    <select id="atajo-fuente" name="idFuente" :class="claseError('idFuente')">
+        <option value="">Ninguna</option>
+        <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
+    </select>
+    <p class="ayuda" x-show="esGasto()">Obligatoria para costos operativos, como la gasolina del motocarro.</p>
+    <p class="ayuda" x-cloak x-show="esIngreso()">Un ingreso con fuente se registra una sola vez por día (producido diario).</p>
+    <p class="error-campo" data-error-de="idFuente" x-cloak x-show="tieneError('idFuente')" x-text="errores.idFuente"></p>
+
+    <button type="submit" class="boton boton-principal boton-bloque" :disabled="enviando">
+        <span class="spinner" x-cloak x-show="enviando"></span>Crear botón
+    </button>
+</form>
+
+<!-- Crear una categoria; si se abrio desde otro modal, vuelve a el con la categoria elegida -->
+<form th:fragment="formCategoria" th:action="@{/categorias}" method="post" class="formulario" novalidate
+      x-data="formularioAjax" @submit.prevent="enviar" th:attr="data-api=@{/api/categorias}">
+    <p class="aviso aviso-error" role="alert" x-cloak x-show="errorGeneral" x-text="errorGeneral"></p>
+
+    <label for="cat-nombre">Nombre</label>
+    <input id="cat-nombre" name="nombre" type="text" maxlength="50" placeholder="Ej. Mascotas" autofocus
+           :class="claseError('nombre')">
+    <p class="error-campo" data-error-de="nombre" x-cloak x-show="tieneError('nombre')" x-text="errores.nombre"></p>
+
+    <label for="cat-tipo">Tipo</label>
+    <select id="cat-tipo" name="tipo" :class="claseError('tipo')">
+        <option th:each="tp : ${tiposCategoria}" th:value="${tp}" th:text="${tp.etiqueta}"
+                th:selected="${tp.name() == 'GASTO'}">Gasto personal</option>
+    </select>
+    <p class="error-campo" data-error-de="tipo" x-cloak x-show="tieneError('tipo')" x-text="errores.tipo"></p>
+
+    <button type="submit" class="boton boton-principal boton-bloque" :disabled="enviando">
+        <span class="spinner" x-cloak x-show="enviando"></span>Crear categoría
+    </button>
+</form>
+
+</body>
+</html>

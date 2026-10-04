@@ -15,15 +15,21 @@
         return;
     }
 
-    const css = getComputedStyle(document.documentElement);
-    const color = (nombre, respaldo) => (css.getPropertyValue(nombre).trim() || respaldo);
-    const colorIngreso = color('--ingreso', '#00FF7F');
-    const colorGasto = color('--gasto', '#F43F5E');
-    const colorTexto = color('--texto-suave', '#8aa69b');
-    const colorLinea = color('--linea', 'rgba(74, 222, 128, 0.15)');
+    // Paleta "Cozy Fintech" (la misma de frontend/tailwind.config.js).
+    const colorIngreso = '#10B981';
+    const colorGasto = '#EF4444';
+    const colorTexto = '#9DAAA2';
+    const colorLinea = 'rgba(255, 255, 255, 0.05)';
 
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.color = colorTexto;
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(21, 26, 23, 0.95)';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.10)';
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.cornerRadius = 12;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
 
     const pesos = (valor) => '$ ' + Number(valor).toLocaleString('es-CO', { maximumFractionDigits: 0 });
     const compacto = (valor) => {
@@ -47,7 +53,7 @@
             type: 'bar',
             data: {
                 labels: datos.dias,
-                datasets: [{ label: 'Producido', data: datos.producidoPorDia, backgroundColor: colorIngreso, borderRadius: 3 }]
+                datasets: [{ label: 'Producido', data: datos.producidoPorDia, backgroundColor: colorIngreso, borderRadius: 6, maxBarThickness: 18 }]
             },
             options: { maintainAspectRatio: false, scales: ejes, plugins: { legend: { display: false }, tooltip: tooltipPesos } }
         });
@@ -60,8 +66,8 @@
             data: {
                 labels: datos.meses,
                 datasets: [
-                    { label: 'Ingresos', data: datos.ingresosPorMes, backgroundColor: colorIngreso, borderRadius: 3 },
-                    { label: 'Gastos', data: datos.gastosPorMes, backgroundColor: colorGasto, borderRadius: 3 }
+                    { label: 'Ingresos', data: datos.ingresosPorMes, backgroundColor: colorIngreso, borderRadius: 6, maxBarThickness: 16 },
+                    { label: 'Gastos', data: datos.gastosPorMes, backgroundColor: colorGasto, borderRadius: 6, maxBarThickness: 16 }
                 ]
             },
             options: { maintainAspectRatio: false, scales: ejes, plugins: { tooltip: tooltipPesos } }
@@ -70,12 +76,12 @@
 
     const categorias = document.getElementById('grafica-categorias');
     if (categorias && datos.categorias && datos.categorias.length) {
-        const paleta = ['#00FF7F', '#22D3EE', '#A78BFA', '#F43F5E', '#FCD34D', '#FB923C', '#4ADE80', '#8aa69b'];
+        const paleta = ['#EF4444', '#F59E0B', '#10B981', '#38BDF8', '#A78BFA', '#F472B6', '#FB923C', '#9DAAA2'];
         new Chart(categorias, {
             type: 'doughnut',
             data: {
                 labels: datos.categorias,
-                datasets: [{ data: datos.gastosPorCategoria, backgroundColor: datos.categorias.map((_, i) => paleta[i % paleta.length]), borderWidth: 0 }]
+                datasets: [{ data: datos.gastosPorCategoria, backgroundColor: datos.categorias.map((_, i) => paleta[i % paleta.length]), borderWidth: 2, borderColor: '#151A17', hoverOffset: 6 }]
             },
             options: {
                 maintainAspectRatio: false,

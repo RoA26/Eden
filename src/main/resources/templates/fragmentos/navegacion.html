@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+    Navegacion: sin barra inferior. La hamburguesa abre un panel lateral
+    (slide-over) sobre un velo oscuro y desenfocado. Sin JavaScript, el boton
+    es un enlace normal a la pagina "Mas", que tiene el mismo menu.
+    Uso: <th:block th:replace="~{fragmentos/navegacion :: navegacion('Titulo', 'activa')}"></th:block>
+-->
+<th:block th:fragment="navegacion(titulo, activa)">
+    <header th:replace="~{fragmentos/navegacion :: encabezado(${titulo})}"></header>
+    <div th:replace="~{fragmentos/navegacion :: menuLateral(${activa})}"></div>
+</th:block>
+
+<!-- Barra superior fija con el boton de menu -->
+<header th:fragment="encabezado(titulo)" class="barra-superior">
+    <a th:href="@{/mas}" class="boton-icono" aria-label="Abrir menú" aria-controls="menu-lateral"
+       :aria-expanded="$store.ui.menu ? 'true' : 'false'" @click.prevent="$store.ui.abrirMenu()">
+        <svg th:replace="~{fragmentos/componentes :: icono('menu')}"></svg>
+    </a>
+    <h1 class="barra-superior-titulo" th:text="${titulo}">Inicio</h1>
+    <a th:href="@{/inicio}" class="ml-auto shrink-0" aria-label="Ir al inicio">
+        <img class="h-9 w-9 rounded-xl ring-1 ring-borde-fuerte" th:src="@{/iconos/icono-192.png}" alt="" width="36" height="36">
+    </a>
+</header>
+
+<!-- Panel lateral (slide-over). 'activa' resalta la seccion actual. -->
+<div th:fragment="menuLateral(activa)" class="fixed inset-0 z-50" x-cloak x-show="$store.ui.menu"
+     role="dialog" aria-modal="true" aria-label="Menú principal">
+    <div class="velo" x-show="$store.ui.menu" x-transition.opacity.duration.300ms @click="$store.ui.cerrarMenu()"></div>
+
+    <div class="pointer-events-none relative mx-auto h-full w-full max-w-md overflow-hidden">
+        <nav id="menu-lateral"
+             class="pointer-events-auto absolute inset-y-0 left-0 flex w-[84%] max-w-[20rem] flex-col border-r border-borde-fuerte bg-fondo-panel/95 shadow-suave backdrop-blur-xl"
+             x-show="$store.ui.menu"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full">
+
+            <div class="flex items-center gap-3 border-b border-borde px-5 pb-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-esmeralda/15 text-base font-bold text-esmeralda"
+                      th:text="${usuarioActual != null and !#strings.isEmpty(usuarioActual)} ? ${#strings.toUpperCase(#strings.substring(usuarioActual, 0, 1))} : 'E'">R</span>
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold" th:text="${usuarioActual ?: nombreApp}">Roger</p>
+                    <p class="text-xs text-tinta-tenue" th:text="${nombreApp ?: 'Eden'}">Eden</p>
+                </div>
+                <button type="button" class="boton-icono h-9 w-9" aria-label="Cerrar menú" @click="$store.ui.cerrarMenu()">
+                    <svg th:replace="~{fragmentos/componentes :: icono('cerrar')}"></svg>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-3 pb-4 pt-2">
+                <a th:href="@{/inicio}" class="menu-enlace" th:classappend="${activa == 'inicio'} ? 'menu-enlace-activo'"
+                   th:attr="aria-current=${activa == 'inicio'} ? 'page' : null">
+                    <svg th:replace="~{fragmentos/componentes :: icono('inicio')}"></svg>Inicio</a>
+                <a th:href="@{/movimientos}" class="menu-enlace" th:classappend="${activa == 'movimientos'} ? 'menu-enlace-activo'"
+                   th:attr="aria-current=${activa == 'movimientos'} ? 'page' : null">
+                    <svg th:replace="~{fragmentos/componentes :: icono('movimientos')}"></svg>Movimientos</a>
+                <a th:href="@{/calendario}" class="menu-enlace" th:classappend="${activa == 'calendario'} ? 'menu-enlace-activo'"
+                   th:attr="aria-current=${activa == 'calendario'} ? 'page' : null">
+                    <svg th:replace="~{fragmentos/componentes :: icono('calendario')}"></svg>Calendario</a>
+                <a th:href="@{/registrar}" class="menu-enlace" th:classappend="${activa == 'registrar'} ? 'menu-enlace-activo'"
+                   th:attr="aria-current=${activa == 'registrar'} ? 'page' : null">
+                    <svg th:replace="~{fragmentos/componentes :: icono('registrar')}"></svg>Producido del día</a>
+
+                <p class="menu-grupo">Mi dinero</p>
+                <a th:href="@{/cajitas}" class="menu-enlace" th:classappend="${activa == 'cajitas'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('cajitas')}"></svg>Cajitas</a>
+                <a th:href="@{/metas}" class="menu-enlace" th:classappend="${activa == 'metas'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('metas')}"></svg>Metas</a>
+                <a th:href="@{/presupuestos}" class="menu-enlace" th:classappend="${activa == 'presupuestos'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('presupuestos')}"></svg>Presupuestos</a>
+                <a th:href="@{/recurrentes}" class="menu-enlace" th:classappend="${activa == 'recurrentes'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('recurrentes')}"></svg>Recurrentes</a>
+
+                <p class="menu-grupo">Configuración</p>
+                <a th:href="@{/fuentes}" class="menu-enlace" th:classappend="${activa == 'fuentes'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('fuentes')}"></svg>Fuentes de ingreso</a>
+                <a th:href="@{/categorias}" class="menu-enlace" th:classappend="${activa == 'categorias'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('categorias')}"></svg>Categorías</a>
+                <a th:href="@{/compartir}" class="menu-enlace" th:classappend="${activa == 'compartir'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('compartir')}"></svg>Compartir mi cuenta</a>
+                <a th:href="@{/mas}" class="menu-enlace" th:classappend="${activa == 'mas'} ? 'menu-enlace-activo'">
+                    <svg th:replace="~{fragmentos/componentes :: icono('mas')}"></svg>Más opciones</a>
+            </div>
+
+            <form th:action="@{/logout}" method="post" class="border-t border-borde px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                <button type="submit" class="menu-enlace w-full">
+                    <svg th:replace="~{fragmentos/componentes :: icono('salir')}"></svg>Cerrar sesión</button>
+            </form>
+        </nav>
+    </div>
+</div>
+
+</body>
+</html>

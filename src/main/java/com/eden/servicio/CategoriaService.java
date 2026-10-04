@@ -60,10 +60,12 @@ public class CategoriaService {
     }
 
     @Transactional
-    public void crear(Long idUsuario, CategoriaForm formulario) {
+    public Categoria crear(Long idUsuario, CategoriaForm formulario) {
         String nombre = formulario.getNombre().trim();
         validarNombreUnico(idUsuario, formulario.getTipo(), nombre, null);
-        categoriaRepositorio.insertar(new Categoria(idUsuario, nombre, formulario.getTipo()));
+        Categoria categoria = new Categoria(idUsuario, nombre, formulario.getTipo());
+        categoria.setId(categoriaRepositorio.insertar(categoria));
+        return categoria;
     }
 
     @Transactional

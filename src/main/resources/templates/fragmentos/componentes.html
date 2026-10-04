@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Iconos de trazo (24x24). Uso: <svg th:replace="~{fragmentos/componentes :: icono('inicio')}"></svg> -->
+<svg th:fragment="icono(nombre)" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" th:switch="${nombre}">
+    <path th:case="'menu'" d="M4 7h16M4 12h16M4 17h10"/>
+    <path th:case="'cerrar'" d="M6 6l12 12M18 6 6 18"/>
+    <path th:case="'inicio'" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
+    <path th:case="'movimientos'" d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/>
+    <path th:case="'calendario'" d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 3v4M16 3v4"/>
+    <path th:case="'registrar'" d="M12 8v8M8 12h8M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+    <path th:case="'cajitas'" d="M3 7h18v4H3zM5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M10 15h4"/>
+    <path th:case="'metas'" d="M5 21V4m0 0h11l-2 4 2 4H5"/>
+    <path th:case="'presupuestos'" d="M12 3v9h9M21 12a9 9 0 1 1-9-9"/>
+    <path th:case="'recurrentes'" d="M4 4v6h6M20 20v-6h-6M5.6 15a7 7 0 0 0 12.3 2M18.4 9A7 7 0 0 0 6.1 7"/>
+    <path th:case="'fuentes'" d="M3 17l6-6 4 4 8-8m-6 0h6v6"/>
+    <path th:case="'categorias'" d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9zM8 8h.01"/>
+    <path th:case="'compartir'" d="M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm13 9v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8"/>
+    <path th:case="'salir'" d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3"/>
+    <path th:case="'mas'" d="M12 5v14M5 12h14"/>
+    <path th:case="'editar'" d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/>
+    <path th:case="*" d="M12 12h.01"/>
+</svg>
+
+<!--
+    Mensajes flash del servidor. Sin JavaScript se ven en linea; con
+    JavaScript, Alpine los convierte en avisos flotantes y los retira de aqui.
+-->
+<div th:fragment="avisos" class="space-y-2" th:if="${mensaje != null or error != null}">
+    <p th:if="${mensaje}" class="aviso aviso-exito" role="status" data-aviso-inicial="exito" th:text="${mensaje}"></p>
+    <p th:if="${error}" class="aviso aviso-error" role="alert" data-aviso-inicial="error" th:text="${error}"></p>
+</div>
+
+<!-- Avisos flotantes ("tostadas"), con accion opcional como "Deshacer" -->
+<div th:fragment="tostadas" aria-live="polite"
+     class="pointer-events-none fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-w-md flex-col gap-2 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <template x-for="aviso in $store.avisos.lista" :key="aviso.id">
+        <div class="tostada animate-aparecer" :class="aviso.tipo === 'error' ? 'tostada-error' : 'tostada-exito'"
+             :role="aviso.tipo === 'error' ? 'alert' : 'status'">
+            <span class="h-2 w-2 shrink-0 rounded-full" :class="aviso.tipo === 'error' ? 'bg-coral' : 'bg-esmeralda'"></span>
+            <p class="flex-1 text-tinta" x-text="aviso.texto"></p>
+            <button type="button" class="enlace shrink-0" x-show="aviso.accion"
+                    x-text="aviso.accion ? aviso.accion.etiqueta : ''" @click="$store.avisos.ejecutar(aviso)"></button>
+        </div>
+    </template>
+</div>
+
+<!-- Fila de un movimiento; 'volver' es la ruta a la que regresa tras eliminar -->
+<article th:fragment="filaMovimiento(m, volver)" class="fila-mov"
+         th:with="entra=${m.tipo.name() == 'INGRESO'}, sale=${m.tipo.name() == 'GASTO'}">
+    <span class="fila-mov-icono"
+          th:classappend="${entra} ? 'bg-esmeralda/10 text-esmeralda' : (${sale} ? 'bg-coral/10 text-coral-claro' : 'bg-white/5 text-tinta-suave')"
+          th:text="${entra} ? '+' : (${sale} ? '−' : '⇄')" aria-hidden="true">−</span>
+    <div class="fila-mov-info">
+        <p class="fila-mov-titulo"
+           th:text="${m.tipo.esIngresoOGasto()} ? (${m.descripcion} ?: ${m.nombreCategoria}) : ${m.tipo.etiqueta}">Combustible</p>
+        <p class="fila-mov-detalle">
+            <span th:text="${@formato.fecha(m.fecha)}">mié 23 sep</span>
+            <span th:if="${m.tipo.esIngresoOGasto() and m.descripcion != null}" th:text="${m.nombreCategoria}"></span>
+            <span th:if="${m.nombreFuente}" th:text="${m.nombreFuente}">Motocarro</span>
+            <span th:if="${m.nombreCajita}" th:text="${m.nombreCajita}">Daniela</span>
+            <span th:if="${m.nombreCajitaOrigen}" th:text="'Desde ' + ${m.nombreCajitaOrigen}"></span>
+            <span th:if="${!m.tipo.esIngresoOGasto() and m.descripcion != null}" th:text="${m.descripcion}"></span>
+        </p>
+    </div>
+    <div class="fila-mov-lado">
+        <p class="fila-mov-monto"
+           th:classappend="${entra} ? 'monto-ingreso' : (${sale} ? 'monto-gasto' : 'monto-neutro')"
+           th:text="(${entra} ? '+ ' : (${sale} ? '− ' : '')) + ${@formato.pesos(m.monto)}">$ 0</p>
+        <div class="fila-mov-acciones" th:unless="${soloLectura}">
+            <a th:if="${m.editable}" th:href="@{/movimientos/{id}/editar(id=${m.id})}">Editar</a>
+            <form th:if="${m.eliminable}" th:action="@{/movimientos/{id}/eliminar(id=${m.id})}" method="post"
+                  data-confirmar="¿Eliminar este movimiento?">
+                <input type="hidden" name="volver" th:value="${volver}">
+                <button type="submit" class="enlace-peligro">Eliminar</button>
+            </form>
+        </div>
+    </div>
+</article>
+
+<!-- Tarjeta de una cajita. Sin enlace en las cuentas compartidas (solo lectura). -->
+<a th:fragment="tarjetaCajita(c, enlazar)" class="tarjeta-enlace flex flex-col gap-3"
+   th:href="${enlazar} ? @{/cajitas/{id}(id=${c.id})} : null" th:classappend="${!c.activa} ? 'inactiva'">
+    <span class="flex items-center justify-between gap-2">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-esmeralda/10 text-sm font-bold text-esmeralda"
+              th:text="${#strings.toUpperCase(#strings.substring(c.nombre, 0, 1))}" aria-hidden="true">D</span>
+        <span class="chip px-2 py-0.5 text-[10px]"
+              th:text="${c.esResto} ? 'Lo que sobra' : ${@formato.porcentaje(c.porcentaje)}">40%</span>
+    </span>
+    <span class="block min-w-0">
+        <span class="block truncate text-sm font-semibold" th:text="${c.nombre}">Daniela</span>
+        <span class="block text-lg font-bold tabular-nums tracking-tight" th:text="${@formato.pesos(c.saldo)}">$ 0</span>
+        <span class="block truncate text-[11px] text-tinta-tenue"
+              th:text="${c.proposito.etiqueta} + (${c.activa} ? '' : ' · desactivada')">Capital</span>
+    </span>
+</a>
+
+<!--
+    Boton rapido ("friccion cero"): un toque registra el movimiento por fetch,
+    muestra un spinner en el propio boton y actualiza el saldo sin recargar.
+    Sin JavaScript, el formulario se envia normal y vuelve al inicio.
+    'editando' y 'quitar' vienen del componente seccionAtajos que lo contiene.
+-->
+<div th:fragment="botonRapido(a)" class="relative">
+    <form th:action="@{/atajos/{id}/usar(id=${a.id})}" method="post"
+          x-data="botonRapido" @submit.prevent="usar" th:attr="data-api=@{/api/atajos/{id}/usar(id=${a.id})}">
+        <button type="submit" class="rapido" th:classappend="${a.esIngreso()} ? 'rapido-ingreso' : 'rapido-gasto'"
+                :disabled="cargando || editando" :aria-busy="cargando ? 'true' : 'false'"
+                th:attr="aria-label=|Registrar ${a.nombre}: ${a.esIngreso() ? 'ingreso' : 'gasto'} de ${@formato.pesos(a.monto)}|">
+            <span class="rapido-nombre" th:text="${a.nombre}">Moto</span>
+            <span class="rapido-monto" th:classappend="${a.esIngreso()} ? 'monto-ingreso' : 'monto-gasto'"
+                  th:text="(${a.esIngreso()} ? '+ ' : '− ') + ${@formato.pesos(a.monto)}">− $ 5.000</span>
+            <span class="rapido-categoria" th:text="${a.nombreCategoria}">Transporte</span>
+            <span class="rapido-cargando" x-cloak x-show="cargando" x-transition.opacity>
+                <span class="spinner h-5 w-5"></span>
+            </span>
+        </button>
+    </form>
+    <form th:action="@{/atajos/{id}/eliminar(id=${a.id})}" method="post" x-cloak x-show="editando"
+          x-transition.scale.origin.top.right @submit.prevent="quitar"
+          th:attr="data-api=@{/api/atajos/{id}/eliminar(id=${a.id})},data-pregunta=|¿Eliminar el botón «${a.nombre}»?|">
+        <button type="submit" class="rapido-quitar" th:attr="aria-label=|Eliminar ${a.nombre}|">
+            <svg th:replace="~{fragmentos/componentes :: icono('cerrar')}"></svg>
+        </button>
+    </form>
+</div>
+
+<!-- Aviso y navegacion de una cuenta compartida (solo lectura) -->
+<div th:fragment="bannerCompartido" class="banner-compartido" th:if="${soloLectura}">
+    <p>Estás viendo la cuenta de <strong th:text="${nombreTitular}">Papá</strong>. Solo lectura.</p>
+    <nav class="pestanas" aria-label="Secciones de la cuenta compartida">
+        <a th:href="@{${baseRuta + '/inicio'}}">Inicio</a>
+        <a th:href="@{${baseRuta + '/movimientos'}}">Movimientos</a>
+        <a th:href="@{${baseRuta + '/calendario'}}">Calendario</a>
+    </nav>
+    <a th:href="@{/inicio}">Volver a mi cuenta</a>
+</div>
+
+<!--
+    Modal centrado (Alpine: x-show + x-transition) con velo oscuro y desenfocado.
+    'nombre' identifica el modal en $store.ui.modal; 'cuerpo' es un fragmento.
+    Uso: <div th:replace="~{fragmentos/componentes :: modal('categoria', 'Nueva categoría', ~{fragmentos/modales :: formCategoria})}"></div>
+-->
+<div th:fragment="modal(nombre, titulo, cuerpo)" class="fixed inset-0 z-50 overflow-y-auto" x-cloak
+     th:attr="x-show=|$store.ui.modal === '${nombre}'|">
+    <div class="velo" x-transition.opacity.duration.250ms @click="$store.ui.cerrarModal()"
+         th:attr="x-show=|$store.ui.modal === '${nombre}'|"></div>
+    <div class="pointer-events-none relative flex min-h-full items-center justify-center p-4">
+        <section class="modal-panel pointer-events-auto" role="dialog" aria-modal="true"
+                 th:attr="data-modal=${nombre},aria-labelledby='titulo-modal-' + ${nombre},x-show=|$store.ui.modal === '${nombre}'|"
+                 x-transition:enter="transition ease-out duration-250"
+                 x-transition:enter-start="opacity-0 translate-y-4 scale-[0.97]"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 scale-[0.97]">
+            <header class="modal-cabecera">
+                <h2 class="modal-titulo" th:id="'titulo-modal-' + ${nombre}" th:text="${titulo}">Título</h2>
+                <button type="button" class="boton-icono h-9 w-9" aria-label="Cerrar" @click="$store.ui.cerrarModal()">
+                    <svg th:replace="~{fragmentos/componentes :: icono('cerrar')}"></svg>
+                </button>
+            </header>
+            <th:block th:replace="${cuerpo}"></th:block>
+        </section>
+    </div>
+</div>
+
+</body>
+</html>
