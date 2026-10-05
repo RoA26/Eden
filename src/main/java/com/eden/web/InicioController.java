@@ -19,6 +19,8 @@ import java.util.Set;
 @Controller
 public class InicioController {
 
+    static final String VISTA_LANDING = "bienvenida";
+
     /** Secciones del tablero que el navegador puede volver a pedir tras una accion sin recarga. */
     private static final Set<String> SECCIONES_PARCIALES = Set.of("atajos", "resumenMes", "ultimos", "cajitas");
 
@@ -42,10 +44,14 @@ public class InicioController {
         this.movimientoService = movimientoService;
     }
 
-    /** Landing publica; quien ya tiene sesion va directo a su tablero. */
+    /**
+     * Landing publica: SIEMPRE se muestra, haya sesion o no (nunca redirige).
+     * Con sesion activa, su encabezado ofrece volver al tablero (/inicio).
+     */
     @GetMapping("/")
-    public String raiz(@AuthenticationPrincipal UsuarioAutenticado usuario) {
-        return usuario == null ? "bienvenida" : "redirect:/inicio";
+    public String raiz(@AuthenticationPrincipal UsuarioAutenticado usuario, Model model) {
+        model.addAttribute("sesionActiva", usuario != null);
+        return VISTA_LANDING;
     }
 
     @GetMapping("/inicio")

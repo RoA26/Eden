@@ -4,9 +4,19 @@
 <body class="overflow-x-hidden">
 <div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
 
-<!-- ================================================================ Navbar publico -->
+<!-- ================================================================ Navbar publico ("smart header")
+     Sin sesion: Iniciar sesion / Empezar gratis. Con sesion: aviso y acceso a /inicio. -->
 <header class="sticky top-0 z-40 border-b border-borde bg-fondo/70 backdrop-blur-xl" x-data="menuPublico"
         @keydown.escape.window="cerrar">
+    <div th:if="${sesionActiva}" class="border-b border-esmeralda/20 bg-esmeralda/10">
+        <div class="landing-contenedor flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2 text-center text-sm">
+            <p class="text-tinta">
+                <span aria-hidden="true">✨</span> Hola de nuevo<span th:if="${usuarioActual != null}"
+                    th:text="', ' + ${usuarioActual}">, Roger</span>. Tienes una sesión activa.
+            </p>
+            <a th:href="@{/inicio}" class="font-semibold text-esmeralda-claro hover:underline">Ir a mi Dashboard ➔</a>
+        </div>
+    </div>
     <nav class="landing-contenedor flex h-16 items-center justify-between gap-3 md:h-20" aria-label="Principal">
         <a th:href="@{/}" class="flex items-center gap-2.5">
             <img class="h-9 w-9 rounded-xl ring-1 ring-borde-fuerte" th:src="@{/iconos/icono-192.png}" alt="" width="36" height="36">
@@ -18,24 +28,26 @@
                     :aria-pressed="$store.tema.oscuro ? 'true' : 'false'">
                 <th:block th:replace="~{fragmentos/navegacion :: iconosTema}"></th:block>
             </button>
-            <!-- Escritorio y tableta -->
-            <a th:href="@{/login}" class="boton-fantasma hidden sm:inline-flex">Iniciar sesión</a>
-            <a th:href="@{/registro}" class="boton boton-principal hidden sm:inline-flex">Empezar gratis</a>
-            <!-- Telefono: los botones colapsan en un menu -->
-            <button type="button" class="boton-icono sm:hidden" aria-controls="menu-publico" aria-label="Abrir menú"
+            <!-- Con sesion activa: acceso directo al tablero -->
+            <a th:if="${sesionActiva}" th:href="@{/inicio}" class="boton boton-principal">Ir a mi Dashboard ➔</a>
+            <!-- Sin sesion, escritorio y tableta -->
+            <a th:unless="${sesionActiva}" th:href="@{/login}" class="boton-fantasma hidden sm:inline-flex">Iniciar sesión</a>
+            <a th:unless="${sesionActiva}" th:href="@{/registro}" class="boton boton-principal hidden sm:inline-flex">Empezar gratis</a>
+            <!-- Sin sesion, telefono: los botones colapsan en un menu -->
+            <button th:unless="${sesionActiva}" type="button" class="boton-icono sm:hidden" aria-controls="menu-publico" aria-label="Abrir menú"
                     :aria-expanded="abierto ? 'true' : 'false'" @click="alternar">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                      stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
             </button>
         </div>
     </nav>
-    <div id="menu-publico" class="landing-contenedor grid gap-2 pb-4 sm:hidden" x-cloak x-show="abierto"
+    <div th:unless="${sesionActiva}" id="menu-publico" class="landing-contenedor grid gap-2 pb-4 sm:hidden" x-cloak x-show="abierto"
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0" @click.outside="cerrar">
         <a th:href="@{/login}" class="boton boton-claro boton-bloque">Iniciar sesión</a>
         <a th:href="@{/registro}" class="boton boton-principal boton-bloque">Empezar gratis</a>
     </div>
-    <noscript>
+    <noscript th:unless="${sesionActiva}">
         <div class="landing-contenedor flex gap-2 pb-4 sm:hidden">
             <a th:href="@{/login}" class="boton boton-claro flex-1">Iniciar sesión</a>
             <a th:href="@{/registro}" class="boton boton-principal flex-1">Empezar gratis</a>
@@ -57,12 +69,12 @@
             freelancer, sin interfaces que estorban.
         </p>
         <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a th:href="@{/registro}" class="boton boton-principal boton-grande w-full sm:w-auto">
-                Crea tu espacio de trabajo
+            <a th:href="${sesionActiva} ? @{/inicio} : @{/registro}" class="boton boton-principal boton-grande w-full sm:w-auto">
+                <span th:text="${sesionActiva} ? 'Ir a mi Dashboard' : 'Crea tu espacio de trabajo'">Crea tu espacio de trabajo</span>
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <a th:href="@{/login}" class="boton-fantasma boton-grande w-full sm:w-auto">Ya tengo cuenta</a>
+            <a th:unless="${sesionActiva}" th:href="@{/login}" class="boton-fantasma boton-grande w-full sm:w-auto">Ya tengo cuenta</a>
         </div>
 
         <!-- ======================================================== Gancho visual: ilusion de la app -->
@@ -191,7 +203,8 @@
             <div class="absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-esmeralda/20 blur-3xl" aria-hidden="true"></div>
             <h2 class="relative text-3xl font-bold tracking-tight text-tinta md:text-5xl">Tu espacio está listo en un minuto.</h2>
             <p class="relative mx-auto mt-3 max-w-xl text-tinta-suave">Empieza con el ingreso de hoy. El resto se ordena solo.</p>
-            <a th:href="@{/registro}" class="boton boton-principal boton-grande relative mt-8 w-full sm:w-auto">Crea tu espacio de trabajo</a>
+            <a th:href="${sesionActiva} ? @{/inicio} : @{/registro}" class="boton boton-principal boton-grande relative mt-8 w-full sm:w-auto"
+               th:text="${sesionActiva} ? 'Ir a mi Dashboard' : 'Crea tu espacio de trabajo'">Crea tu espacio de trabajo</a>
         </div>
     </section>
 </main>
@@ -199,7 +212,8 @@
 <footer class="relative z-10 border-t border-borde">
     <div class="landing-contenedor flex flex-col items-center justify-between gap-3 py-8 text-sm text-tinta-tenue sm:flex-row">
         <p><span class="font-semibold text-tinta-suave" th:text="${nombreApp ?: 'Eden'}">Eden</span> · Lo que entra, lo que sale y lo que guardas.</p>
-        <a th:href="@{/login}" class="hover:text-tinta">Iniciar sesión</a>
+        <a th:href="${sesionActiva} ? @{/inicio} : @{/login}" class="hover:text-tinta"
+           th:text="${sesionActiva} ? 'Ir a mi Dashboard' : 'Iniciar sesión'">Iniciar sesión</a>
     </div>
 </footer>
 </body>
