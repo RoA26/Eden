@@ -446,15 +446,38 @@
     .boton-fantasma { @apply boton text-tinta-suave hover:bg-realce/[0.05] hover:text-tinta; }
     .tarjeta-flotante {
         @apply rounded-2xl border border-borde-fuerte bg-fondo-panel/80 p-4 shadow-suave backdrop-blur-md;
-        animation: flotar-suave 7s ease-in-out infinite;
+        animation: flotar-suave 6s ease-in-out infinite;
     }
     .tarjeta-flotante-lenta { animation-duration: 9s; animation-delay: -3s; }
     @keyframes flotar-suave {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-12px); }
     }
+
+    /* Entrada en cascada (staggered fade-up) del hero de la landing:
+       insignia -> titular -> subtitulo -> CTA -> vista previa. */
+    .entrada {
+        animation: subir-entrada 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+        animation-delay: var(--retraso, 0ms);
+    }
+    .entrada-1 { --retraso: 60ms; }
+    .entrada-2 { --retraso: 200ms; }
+    .entrada-3 { --retraso: 360ms; }
+    .entrada-4 { --retraso: 520ms; }
+    .entrada-5 { --retraso: 720ms; }
+    @keyframes subir-entrada {
+        from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+        to { opacity: 1; transform: none; filter: none; }
+    }
+
+    /* Tarjetas del bento: elevacion suave al pasar el cursor */
+    .tarjeta-bento {
+        @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:border-esmeralda/30 hover:shadow-suave;
+    }
+
     @media (prefers-reduced-motion: reduce) {
-        .tarjeta-flotante, .nubes span, .animate-fade-in { animation: none; }
+        .tarjeta-flotante, .nubes span, .animate-fade-in, .entrada { animation: none; }
+        .tarjeta-bento:hover { transform: none; }
     }
 
     /* ---------- Graficas ---------- */
