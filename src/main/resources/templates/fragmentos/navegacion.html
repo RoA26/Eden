@@ -41,6 +41,7 @@
             <span th:replace="~{fragmentos/navegacion :: avatar}"></span>
             <p class="min-w-0 flex-1 truncate text-sm font-semibold" th:text="${usuarioActual ?: nombreApp}">Roger</p>
         </div>
+        <button th:replace="~{fragmentos/navegacion :: interruptorTema}"></button>
         <form th:action="@{/logout}" method="post">
             <button type="submit" class="menu-enlace w-full">
                 <svg th:replace="~{fragmentos/componentes :: icono('salir')}"></svg>Cerrar sesión</button>
@@ -80,12 +81,33 @@
             </div>
 
             <form th:action="@{/logout}" method="post" class="border-t border-borde px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                <button th:replace="~{fragmentos/navegacion :: interruptorTema}"></button>
                 <button type="submit" class="menu-enlace w-full">
                     <svg th:replace="~{fragmentos/componentes :: icono('salir')}"></svg>Cerrar sesión</button>
             </form>
         </nav>
     </div>
 </div>
+
+<!-- Interruptor Sol/Luna (tema claro/oscuro, se guarda en localStorage) -->
+<button th:fragment="interruptorTema" type="button" class="menu-enlace w-full"
+        @click="$store.tema.alternar()" :aria-label="$store.tema.etiqueta()"
+        :aria-pressed="$store.tema.oscuro ? 'true' : 'false'">
+    <svg th:replace="~{fragmentos/navegacion :: iconosTema}"></svg>
+    <span x-text="$store.tema.oscuro ? 'Modo claro' : 'Modo oscuro'">Cambiar tema</span>
+</button>
+
+<!-- Sol (en oscuro: "pasar a claro") y Luna (en claro) -->
+<th:block th:fragment="iconosTema">
+    <svg class="h-5 w-5" x-show="$store.tema.oscuro" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <path d="M12 3v2m0 14v2M5.6 5.6 7 7m10 10 1.4 1.4M3 12h2m14 0h2M5.6 18.4 7 17M17 7l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"/>
+    </svg>
+    <svg class="h-5 w-5" x-cloak x-show="!$store.tema.oscuro" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
+    </svg>
+</th:block>
 
 <!-- Inicial del usuario -->
 <span th:fragment="avatar" aria-hidden="true"
@@ -113,12 +135,8 @@
         <svg th:replace="~{fragmentos/componentes :: icono('registrar')}"></svg>Producido del día</a>
 
     <p class="menu-grupo">Mi dinero</p>
-    <a th:href="@{/cajitas}" class="menu-enlace" th:classappend="${activa == 'cajitas'} ? 'menu-enlace-activo'">
-        <svg th:replace="~{fragmentos/componentes :: icono('cajitas')}"></svg>Cajitas</a>
     <a th:href="@{/metas}" class="menu-enlace" th:classappend="${activa == 'metas'} ? 'menu-enlace-activo'">
         <svg th:replace="~{fragmentos/componentes :: icono('metas')}"></svg>Metas</a>
-    <a th:href="@{/presupuestos}" class="menu-enlace" th:classappend="${activa == 'presupuestos'} ? 'menu-enlace-activo'">
-        <svg th:replace="~{fragmentos/componentes :: icono('presupuestos')}"></svg>Presupuestos</a>
     <a th:href="@{/recurrentes}" class="menu-enlace" th:classappend="${activa == 'recurrentes'} ? 'menu-enlace-activo'">
         <svg th:replace="~{fragmentos/componentes :: icono('recurrentes')}"></svg>Recurrentes</a>
 

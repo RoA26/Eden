@@ -12,9 +12,58 @@
 
 /* ------------------------------------------------------------------ base */
 @layer base {
+    /* Tema claro: blanco perla. Los valores son canales RGB para que Tailwind
+       pueda aplicar opacidad (bg-fondo/70). */
     :root {
-        color-scheme: dark;
+        color-scheme: light;
         -webkit-tap-highlight-color: transparent;
+        --c-fondo: 248 249 250;        /* #F8F9FA */
+        --c-fondo-hondo: 236 239 241;
+        --c-fondo-panel: 255 255 255;
+        --c-superficie: 255 255 255;
+        --a-superficie: 0.72;
+        --a-superficie-alta: 0.95;
+        --c-realce: 15 23 20;          /* tinte neutro: oscuro sobre claro */
+        --a-borde: 0.08;
+        --a-borde-fuerte: 0.14;
+        --c-hundido: 15 23 20;
+        --a-hundido: 0.05;
+        --c-tinta: 22 30 26;
+        --c-tinta-suave: 75 90 82;
+        --c-tinta-tenue: 112 125 118;
+        --c-esmeralda: 5 150 105;      /* texto esmeralda legible sobre blanco */
+        --c-esmeralda-claro: 4 120 87;
+        --c-coral: 220 38 38;
+        --c-coral-claro: 185 28 28;
+        --c-ambar: 217 119 6;
+        --c-sombra: 15 23 20;
+        --a-sombra: 0.14;
+    }
+
+    /* Tema oscuro: verde asfalto */
+    .dark {
+        color-scheme: dark;
+        --c-fondo: 18 22 20;           /* #121614 */
+        --c-fondo-hondo: 12 15 13;
+        --c-fondo-panel: 21 26 23;
+        --c-superficie: 255 255 255;
+        --a-superficie: 0.03;
+        --a-superficie-alta: 0.06;
+        --c-realce: 255 255 255;       /* tinte neutro: claro sobre oscuro */
+        --a-borde: 0.05;
+        --a-borde-fuerte: 0.10;
+        --c-hundido: 0 0 0;
+        --a-hundido: 0.20;
+        --c-tinta: 238 241 236;
+        --c-tinta-suave: 157 170 162;
+        --c-tinta-tenue: 107 122 114;
+        --c-esmeralda: 16 185 129;     /* #10B981 */
+        --c-esmeralda-claro: 52 211 153;
+        --c-coral: 239 68 68;          /* #EF4444 */
+        --c-coral-claro: 248 113 113;
+        --c-ambar: 245 158 11;
+        --c-sombra: 0 0 0;
+        --a-sombra: 0.55;
     }
 
     html { @apply bg-fondo-hondo; }
@@ -35,7 +84,10 @@
 
     ::selection { @apply bg-esmeralda/30 text-tinta; }
 
-    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); opacity: 0.6; }
+    .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); opacity: 0.6; }
+
+    /* Cambio de tema suave (sin animar la primera pintura: tema.js pone la clase antes) */
+    body, .tarjeta, .barra-lateral, .barra-superior { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
 }
 
 /* ------------------------------------------------------------------ componentes */
@@ -94,9 +146,11 @@
                transition duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60;
     }
     /* Texto casi negro sobre esmeralda: contraste AA (7:1). Nunca texto verde sobre este fondo. */
-    .boton-principal { @apply bg-esmeralda text-gray-900 shadow-brillo hover:bg-esmeralda-claro hover:text-gray-900; }
+    .boton-principal { @apply bg-marca text-gray-900 shadow-brillo hover:bg-[#34D399] hover:text-gray-900; }
     .boton-grande { @apply rounded-2xl px-6 py-4 text-base; }
-    .boton-claro { @apply border border-borde-fuerte bg-white/[0.04] text-tinta hover:bg-white/[0.08]; }
+    .boton-claro { @apply border border-borde-fuerte bg-realce/[0.04] text-tinta hover:bg-realce/[0.08]; }
+    /* Rojo un poco mas hondo que #EF4444 para que el texto blanco tenga contraste AA */
+    .boton-peligro-solido { @apply bg-[#DC2626] text-white hover:bg-[#B91C1C]; }
     .boton-peligro { @apply border border-coral/25 bg-coral/10 text-coral-claro hover:bg-coral/20; }
     .boton-pequeno { @apply rounded-lg px-3 py-2 text-xs; }
     .boton-bloque { @apply w-full; }
@@ -118,8 +172,8 @@
     .etiqueta { @apply mt-2.5 block text-xs font-semibold text-tinta-suave first:mt-0; }
     .campo,
     .formulario :is(input[type="text"], input[type="number"], input[type="date"], input[type="password"], select, textarea) {
-        @apply block w-full rounded-xl border border-borde-fuerte bg-white/[0.03] px-3.5 py-3 text-[15px] text-tinta
-               placeholder:text-tinta-tenue transition focus:border-esmeralda/60 focus:bg-white/[0.05] focus:outline-none
+        @apply block w-full rounded-xl border border-borde-fuerte bg-realce/[0.03] px-3.5 py-3 text-[15px] text-tinta
+               placeholder:text-tinta-tenue transition focus:border-esmeralda/60 focus:bg-realce/[0.05] focus:outline-none
                focus:ring-2 focus:ring-esmeralda/20;
     }
     select.campo, .formulario select {
@@ -145,11 +199,11 @@
     .formulario-accion { @apply inline; }
 
     /* Control segmentado (Gasto / Ingreso) */
-    .segmentos { @apply grid grid-flow-col auto-cols-fr gap-1 rounded-xl border border-borde bg-black/20 p-1; }
+    .segmentos { @apply grid grid-flow-col auto-cols-fr gap-1 rounded-xl border border-borde bg-hundido p-1; }
     .segmento {
         @apply rounded-lg px-3 py-2 text-center text-sm font-semibold text-tinta-suave transition hover:text-tinta;
     }
-    .segmento-activo { @apply bg-white/[0.08] text-tinta shadow-sm; }
+    .segmento-activo { @apply bg-realce/[0.08] text-tinta shadow-sm; }
     .segmento-activo.segmento-gasto { @apply bg-coral/15 text-coral-claro; }
     .segmento-activo.segmento-ingreso { @apply bg-esmeralda/15 text-esmeralda-claro; }
 
@@ -179,8 +233,8 @@
     .chip strong { @apply font-semibold tabular-nums text-tinta; }
 
     /* ---------- Barras de progreso ---------- */
-    .barra { @apply mt-2 block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-white/[0.06]; }
-    .barra::-webkit-progress-bar { @apply rounded-full bg-white/[0.06]; }
+    .barra { @apply mt-2 block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-realce/[0.06]; }
+    .barra::-webkit-progress-bar { @apply rounded-full bg-realce/[0.06]; }
     .barra::-webkit-progress-value { @apply rounded-full bg-esmeralda transition-all duration-500; }
     .barra::-moz-progress-bar { @apply rounded-full bg-esmeralda; }
     .barra-alerta::-webkit-progress-value { @apply bg-ambar; }
@@ -246,7 +300,7 @@
 
     .menu-enlace {
         @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-tinta-suave transition
-               hover:bg-white/[0.05] hover:text-tinta;
+               hover:bg-realce/[0.05] hover:text-tinta;
     }
     .menu-enlace svg { @apply h-5 w-5 shrink-0 opacity-80; }
     .menu-enlace-activo { @apply bg-esmeralda/10 text-esmeralda-claro hover:bg-esmeralda/15 hover:text-esmeralda-claro; }
@@ -305,7 +359,7 @@
     .linea-reparto input { @apply campo max-w-[9.5rem] py-2 text-right; }
 
     /* ---------- Modales y panel lateral ---------- */
-    .velo { @apply fixed inset-0 bg-black/55 backdrop-blur-md; }
+    .velo { @apply fixed inset-0 bg-black/40 backdrop-blur-md dark:bg-black/55; }
     .modal-panel {
         @apply relative max-h-[88dvh] w-full max-w-md overflow-y-auto rounded-3xl border border-borde-fuerte bg-fondo-panel/95
                p-5 shadow-suave backdrop-blur-xl;
@@ -359,11 +413,11 @@
     .campo-pin input { @apply text-lg font-bold tracking-[0.5em]; }
     .ver-contrasena {
         @apply absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-tinta-suave
-               transition hover:bg-white/5 hover:text-tinta;
+               transition hover:bg-realce/5 hover:text-tinta;
     }
     .interruptor { @apply flex items-center justify-between gap-3 py-1 text-sm text-tinta-suave; }
     .interruptor input[type="checkbox"] {
-        @apply relative h-6 w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-white/10 transition
+        @apply relative h-6 w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-realce/10 transition
                before:absolute before:left-0.5 before:top-0.5 before:h-5 before:w-5 before:rounded-full before:bg-tinta
                before:transition checked:bg-esmeralda checked:before:translate-x-5;
     }
@@ -380,8 +434,8 @@
     }
     .teclado { @apply grid grid-cols-3 gap-2; }
     .tecla {
-        @apply grid h-14 place-items-center rounded-2xl border border-borde bg-white/[0.04] text-xl font-semibold tabular-nums
-               text-tinta transition hover:bg-white/[0.08] active:scale-95 active:bg-white/[0.12];
+        @apply grid h-14 place-items-center rounded-2xl border border-borde bg-realce/[0.04] text-xl font-semibold tabular-nums
+               text-tinta transition hover:bg-realce/[0.08] active:scale-95 active:bg-realce/[0.12];
     }
     .tecla-suave { @apply text-base text-tinta-suave; }
     .chip-opcion { @apply chip cursor-pointer transition hover:border-borde-fuerte hover:text-tinta; }
@@ -389,9 +443,9 @@
 
     /* ---------- Landing publica ---------- */
     .landing-contenedor { @apply mx-auto w-full max-w-6xl px-5 md:px-8; }
-    .boton-fantasma { @apply boton text-tinta-suave hover:bg-white/[0.05] hover:text-tinta; }
+    .boton-fantasma { @apply boton text-tinta-suave hover:bg-realce/[0.05] hover:text-tinta; }
     .tarjeta-flotante {
-        @apply rounded-2xl border border-white/10 bg-fondo-panel/80 p-4 shadow-suave backdrop-blur-md;
+        @apply rounded-2xl border border-borde-fuerte bg-fondo-panel/80 p-4 shadow-suave backdrop-blur-md;
         animation: flotar-suave 7s ease-in-out infinite;
     }
     .tarjeta-flotante-lenta { animation-duration: 9s; animation-delay: -3s; }
@@ -400,7 +454,7 @@
         50% { transform: translateY(-10px); }
     }
     @media (prefers-reduced-motion: reduce) {
-        .tarjeta-flotante, .nubes span { animation: none; }
+        .tarjeta-flotante, .nubes span, .animate-fade-in { animation: none; }
     }
 
     /* ---------- Graficas ---------- */

@@ -5,7 +5,7 @@
 <div class="marco" th:with="t=${tablero}, propia=${!soloLectura}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion(${soloLectura} ? ${nombreTitular} : 'Inicio', 'inicio')}"></th:block>
 
-    <main class="contenido contenido-panel">
+    <main class="animate-fade-in contenido contenido-panel">
         <div th:replace="~{fragmentos/componentes :: bannerCompartido}"></div>
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
@@ -22,35 +22,35 @@
                 <p class="saldo-hero mt-2 lg:text-6xl" data-cifra="total" data-pulso
                    th:attr="data-valor=${t.saldoTotal()}" th:text="${@formato.pesos(t.saldoTotal())}">$ 1.250.000</p>
                 <div class="mt-4 flex flex-wrap gap-2">
-                    <span class="chip">Por repartir
+                    <span class="chip">Disponible
                         <strong data-cifra="disponible" th:attr="data-valor=${t.disponible()}"
                                 th:text="${@formato.pesos(t.disponible())}">$ 0</strong></span>
-                    <span class="chip">En cajitas
+                    <span class="chip">Ahorrado
                         <strong data-cifra="enCajitas" th:attr="data-valor=${t.totalCajitas()}"
                                 th:text="${@formato.pesos(t.totalCajitas())}">$ 0</strong></span>
                 </div>
             </section>
 
             <!-- ============================================================ Friccion cero -->
+            <!-- Botones rapidos: solo gastos frecuentes (los ingresos van por "Producido" o "Movimiento") -->
             <section class="order-2 lg:order-none" th:fragment="atajos" th:unless="${soloLectura}" id="seccion-atajos" th:attr="data-parcial=@{/inicio/parcial/atajos}"
-                     x-data="seccionAtajos" aria-labelledby="titulo-atajos">
+                     th:with="gastos=${atajos.?[!esIngreso()]}" x-data="seccionAtajos" aria-labelledby="titulo-atajos">
                 <div class="seccion-cabecera">
-                    <h2 id="titulo-atajos" class="seccion-titulo">Registro rápido</h2>
-                    <button type="button" class="seccion-enlace" th:unless="${atajos.isEmpty()}" @click="alternarEdicion"
+                    <h2 id="titulo-atajos" class="seccion-titulo">Gastos frecuentes</h2>
+                    <button type="button" class="seccion-enlace" th:unless="${gastos.isEmpty()}" @click="alternarEdicion"
                             x-text="editando ? 'Listo' : 'Editar'">Editar</button>
                 </div>
                 <div class="grid grid-cols-2 gap-3 min-[400px]:grid-cols-3 xl:grid-cols-4">
-                    <th:block th:each="a : ${atajos}">
+                    <th:block th:each="a : ${gastos}">
                         <div th:replace="~{fragmentos/componentes :: botonRapido(${a})}"></div>
                     </th:block>
                     <a th:href="@{/registrar}" class="rapido-nuevo" @click.prevent="$store.ui.abrirModal('atajo')">
                         <svg th:replace="~{fragmentos/componentes :: icono('mas')}"></svg>
-                        <span th:text="${atajos.isEmpty()} ? 'Crea tu primer botón' : 'Nuevo botón'">Nuevo botón</span>
+                        <span th:text="${gastos.isEmpty()} ? 'Crea tu primer gasto frecuente' : 'Nuevo gasto'">Nuevo gasto</span>
                     </a>
                 </div>
-                <p class="ayuda mt-3" th:if="${atajos.isEmpty()}">
-                    Los botones rápidos registran un gasto o ingreso frecuente con un solo toque. Por ejemplo
-                    «Moto $5.000» o «Venta postre».
+                <p class="ayuda mt-3" th:if="${gastos.isEmpty()}">
+                    Registra con un solo toque lo que pagas a menudo: transporte, comida, el café de la mañana.
                 </p>
             </section>
 
@@ -85,23 +85,6 @@
                 <script id="datos-graficas" type="application/json" th:inline="javascript">/*[[${t.datosGraficas()}]]*/ null</script>
             </section>
 
-            <!-- ============================================================ Cajitas -->
-            <section class="order-9 lg:order-none" th:fragment="cajitas" id="seccion-cajitas" th:attr="data-parcial=@{/inicio/parcial/cajitas}"
-                     aria-labelledby="titulo-cajitas">
-                <div class="seccion-cabecera">
-                    <h2 id="titulo-cajitas" class="seccion-titulo">Cajitas</h2>
-                    <a class="seccion-enlace" th:unless="${soloLectura}" th:href="@{/cajitas}">Ver todas</a>
-                </div>
-                <p class="vacio" th:if="${tablero.cajitas().isEmpty() and !soloLectura}">
-                    Crea tus cajitas (Daniela, Atenea, Emergencia, Chelas...) para repartir tu dinero.
-                    <a th:href="@{/cajitas}">Crear cajita</a>
-                </p>
-                <div class="grid grid-cols-2 gap-3 xl:grid-cols-3">
-                    <th:block th:each="c : ${tablero.cajitas()}">
-                        <a th:replace="~{fragmentos/componentes :: tarjetaCajita(${c}, ${!soloLectura})}"></a>
-                    </th:block>
-                </div>
-            </section>
         </div>
 
         <div class="columna-panel">
@@ -113,12 +96,8 @@
                 <a th:href="@{/registrar}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
                @click.prevent="$store.ui.abrirModal('producido')">
                     <svg th:replace="~{fragmentos/componentes :: icono('registrar')}"></svg>Producido</a>
-                <a th:href="@{/cajitas/repartir}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
-                   th:if="${t.disponible().signum() > 0}">
-                    <svg th:replace="~{fragmentos/componentes :: icono('cajitas')}"></svg>Repartir</a>
-                <a th:href="@{/categorias}" class="boton boton-claro flex-col gap-1 px-2 text-xs"
-                   th:unless="${t.disponible().signum() > 0}" @click.prevent="$store.ui.abrirModal('categoria')">
-                    <svg th:replace="~{fragmentos/componentes :: icono('categorias')}"></svg>Categoría</a>
+                <a th:href="@{/metas/nueva}" class="boton boton-claro flex-col gap-1 px-2 text-xs">
+                    <svg th:replace="~{fragmentos/componentes :: icono('metas')}"></svg>Nueva meta</a>
             </nav>
 
             <!-- ============================================================ Este mes -->
@@ -177,7 +156,7 @@
                                 <button type="submit" class="boton boton-principal boton-pequeno">Confirmar</button>
                             </form>
                             <form th:action="@{/recurrentes/{id}/omitir(id=${r.id})}" method="post"
-                                  data-confirmar="¿Omitir este periodo sin registrar nada?">
+                                  data-confirmar="¿Omitir este periodo sin registrar nada?" data-confirmar-accion="Omitir">
                                 <input type="hidden" name="volver" value="/inicio">
                                 <button type="submit" class="enlace text-xs text-tinta-suave">Omitir</button>
                             </form>
@@ -186,35 +165,20 @@
                 </div>
             </section>
 
-            <!-- ============================================================ Presupuestos y metas -->
-            <section class="order-6 lg:order-none" th:unless="${t.alertasPresupuesto().isEmpty()}" aria-labelledby="titulo-alertas">
-                <div class="seccion-cabecera">
-                    <h2 id="titulo-alertas" class="seccion-titulo">Presupuestos en alerta</h2>
-                    <a class="seccion-enlace" th:if="${propia}" th:href="@{/presupuestos}">Ver todos</a>
-                </div>
-                <div class="tarjeta space-y-4">
-                    <div th:each="p : ${t.alertasPresupuesto()}">
-                        <div class="tarjeta-fila text-sm">
-                            <span class="font-medium" th:text="${p.categoria()}">Alimentación</span>
-                            <span class="tabular-nums text-tinta-suave"
-                                  th:text="${@formato.pesos(p.gastado())} + ' de ' + ${@formato.pesos(p.presupuestado())}">$ 0 de $ 0</span>
-                        </div>
-                        <progress max="100" th:value="${p.porcentajeBarra()}"
-                                  th:class="${p.excedido()} ? 'barra barra-excedida' : 'barra barra-alerta'"
-                                  th:text="${p.porcentaje()} + '%'"></progress>
-                    </div>
-                </div>
-            </section>
-
-            <section class="order-7 lg:order-none" th:unless="${t.metas().isEmpty()}" aria-labelledby="titulo-metas">
+            <!-- ============================================================ Metas (unica entidad de ahorro) -->
+            <section class="order-6 lg:order-none" th:unless="${t.metas().isEmpty() and soloLectura}" aria-labelledby="titulo-metas">
                 <div class="seccion-cabecera">
                     <h2 id="titulo-metas" class="seccion-titulo">Metas</h2>
                     <a class="seccion-enlace" th:if="${propia}" th:href="@{/metas}">Ver todas</a>
                 </div>
-                <div class="tarjeta space-y-4">
+                <p class="vacio" th:if="${t.metas().isEmpty()}">
+                    Tus metas son tu ahorro: define cuánto quieres reunir y para cuándo.
+                    <a th:href="@{/metas/nueva}">Crear meta</a>
+                </p>
+                <div class="tarjeta space-y-4" th:unless="${t.metas().isEmpty()}">
                     <div th:each="pm : ${t.metas()}">
                         <div class="tarjeta-fila text-sm">
-                            <span class="font-medium" th:text="${pm.meta().nombre}">Moto nueva</span>
+                            <span class="min-w-0 truncate font-medium" th:text="${pm.meta().nombre}">Moto nueva</span>
                             <span class="font-semibold tabular-nums text-esmeralda" th:text="${pm.porcentaje()} + '%'">40%</span>
                         </div>
                         <progress class="barra" max="100" th:value="${pm.porcentaje()}" th:text="${pm.porcentaje()} + '%'"></progress>
@@ -279,7 +243,7 @@
     <th:block th:if="${propia}">
         <th:block th:replace="~{fragmentos/modales :: modales}"></th:block>
     </th:block>
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 <script th:src="@{/js/vendor/chart.umd.js}" defer></script>
 <script th:src="@{/js/tablero.js}" defer></script>

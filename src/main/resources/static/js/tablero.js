@@ -18,8 +18,10 @@
     // Paleta "Cozy Fintech" (la misma de frontend/tailwind.config.js).
     const colorIngreso = '#10B981';
     const colorGasto = '#EF4444';
-    const colorTexto = '#9DAAA2';
-    const colorLinea = 'rgba(255, 255, 255, 0.05)';
+    // Texto y rejilla dependen del tema claro/oscuro (clase "dark" en <html>).
+    const esOscuro = () => document.documentElement.classList.contains('dark');
+    const colorTexto = esOscuro() ? '#9DAAA2' : '#4B5A52';
+    const colorLinea = esOscuro() ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 20, 0.08)';
 
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.color = colorTexto;
@@ -93,4 +95,22 @@
             }
         });
     }
+
+    // Al cambiar de tema (interruptor Sol/Luna) se recolorean texto y rejilla sin recargar.
+    window.addEventListener('eden:tema', function () {
+        const texto = esOscuro() ? '#9DAAA2' : '#4B5A52';
+        const linea = esOscuro() ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 20, 0.08)';
+        Chart.defaults.color = texto;
+        Object.values(Chart.instances).forEach(function (grafica) {
+            const escalas = grafica.options.scales || {};
+            Object.keys(escalas).forEach(function (eje) {
+                if (escalas[eje].ticks) { escalas[eje].ticks.color = texto; }
+                if (escalas[eje].grid) { escalas[eje].grid.color = linea; }
+            });
+            if (grafica.options.plugins && grafica.options.plugins.legend) {
+                grafica.options.plugins.legend.labels.color = texto;
+            }
+            grafica.update('none');
+        });
+    });
 })();

@@ -6,7 +6,7 @@
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Más opciones', 'mas')}"></th:block>
 
     <!-- Mismo contenido que el menu lateral: es su version sin JavaScript. -->
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <section th:unless="${cuentasCompartidas.isEmpty()}">
             <h2 class="seccion-titulo mb-3">Cuentas compartidas contigo</h2>
             <nav class="menu">
@@ -19,12 +19,10 @@
         <section>
             <h2 class="seccion-titulo mb-3">Mi dinero</h2>
             <nav class="menu" aria-label="Mi dinero">
-                <a th:href="@{/inicio}"><strong>Inicio</strong><span>Saldo, botones rápidos y resumen del mes</span></a>
+                <a th:href="@{/inicio}"><strong>Inicio</strong><span>Saldo, gastos frecuentes y resumen del mes</span></a>
                 <a th:href="@{/movimientos}"><strong>Movimientos</strong><span>Todo lo que entra y sale</span></a>
                 <a th:href="@{/calendario}"><strong>Calendario</strong><span>Tu producido día a día</span></a>
-                <a th:href="@{/cajitas}"><strong>Cajitas</strong><span>Saldos, aportes y reparto del disponible</span></a>
-                <a th:href="@{/metas}"><strong>Metas</strong><span>Lo que estás ahorrando y cuánto falta</span></a>
-                <a th:href="@{/presupuestos}"><strong>Presupuestos</strong><span>Topes mensuales por categoría</span></a>
+                <a th:href="@{/metas}"><strong>Metas</strong><span>Tu ahorro: cuánto llevas y cuánto falta</span></a>
                 <a th:href="@{/recurrentes}"><strong>Recurrentes</strong><span>Arriendo, SOAT, servicios y otros pagos fijos</span></a>
             </nav>
         </section>
@@ -52,7 +50,7 @@
         </form>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

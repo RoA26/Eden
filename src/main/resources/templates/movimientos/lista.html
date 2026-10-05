@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Movimientos', 'movimientos')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: bannerCompartido}"></div>
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
@@ -63,23 +63,28 @@
 
         <section>
             <p class="vacio" th:if="${pagina.movimientos().isEmpty()}">No hay movimientos en este periodo.</p>
-            <div class="lista" th:unless="${pagina.movimientos().isEmpty()}">
+            <div class="lista" id="lista-movimientos" th:unless="${pagina.movimientos().isEmpty()}">
                 <th:block th:each="m : ${pagina.movimientos()}">
                     <article th:replace="~{fragmentos/componentes :: filaMovimiento(${m}, '/movimientos')}"></article>
                 </th:block>
             </div>
         </section>
 
-        <nav class="paginacion" aria-label="Paginación" th:if="${pagina.hayAnterior() or pagina.haySiguiente()}">
-            <a th:if="${pagina.hayAnterior()}"
-               th:href="@{${baseRuta + '/movimientos'}(desde=${filtro.desde},hasta=${filtro.hasta},tipo=${filtro.tipo},idCategoria=${filtro.idCategoria},idFuente=${filtro.idFuente},pagina=${pagina.pagina() - 1})}">‹ Anteriores</a>
-            <span th:unless="${pagina.hayAnterior()}"></span>
-            <a th:if="${pagina.haySiguiente()}"
-               th:href="@{${baseRuta + '/movimientos'}(desde=${filtro.desde},hasta=${filtro.hasta},tipo=${filtro.tipo},idCategoria=${filtro.idCategoria},idFuente=${filtro.idFuente},pagina=${pagina.pagina() + 1})}">Siguientes ›</a>
+        <!-- "Cargar mas": agrega la pagina siguiente a la lista sin recargar (Alpine).
+             Sin JavaScript es un enlace normal a la pagina siguiente. -->
+        <nav class="grid gap-2" aria-label="Paginación" x-data="cargarMas"
+             th:if="${pagina.hayAnterior() or pagina.haySiguiente()}">
+            <a th:if="${pagina.haySiguiente()}" data-cargar-mas data-lista="lista-movimientos"
+               class="boton boton-claro boton-bloque" @click.prevent="cargar" :aria-busy="cargando ? 'true' : 'false'"
+               th:href="@{${baseRuta + '/movimientos'}(desde=${filtro.desde},hasta=${filtro.hasta},tipo=${filtro.tipo},idCategoria=${filtro.idCategoria},idFuente=${filtro.idFuente},pagina=${pagina.pagina() + 1})}">
+                <span class="spinner" x-cloak x-show="cargando"></span>Cargar más movimientos
+            </a>
+            <a th:if="${pagina.hayAnterior()}" class="justify-self-center text-xs font-semibold text-tinta-suave hover:text-tinta"
+               th:href="@{${baseRuta + '/movimientos'}(desde=${filtro.desde},hasta=${filtro.hasta},tipo=${filtro.tipo},idCategoria=${filtro.idCategoria},idFuente=${filtro.idFuente},pagina=${pagina.pagina() - 1})}">‹ Ver los más recientes</a>
         </nav>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

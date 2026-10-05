@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Producido del día', 'registrar')}"></th:block>
 
-    <main class="contenido lg:max-w-xl">
+    <main class="animate-fade-in contenido lg:max-w-xl">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
         <!-- Calculadora: un numero para la fuente principal, sin exigir crear una fuente antes -->
@@ -68,7 +68,7 @@
         </p>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

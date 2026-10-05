@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Recurrentes', 'recurrentes')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
         <p class="ayuda text-sm">Pagos o ingresos que se repiten (arriendo, SOAT, servicios). Eden te los recuerda en el inicio
@@ -38,7 +38,7 @@
                         <button type="submit" class="enlace" th:text="${r.activo} ? 'Pausar' : 'Reanudar'">Pausar</button>
                     </form>
                     <form th:action="@{/recurrentes/{id}/eliminar(id=${r.id})}" method="post" class="ml-auto"
-                          data-confirmar="¿Eliminar este recurrente? Los movimientos ya registrados se conservan.">
+                          data-confirmar="¿Eliminar este recurrente? Los movimientos ya registrados se conservan." data-confirmar-accion="Eliminar">
                         <button type="submit" class="enlace-peligro">Eliminar</button>
                     </form>
                 </div>
@@ -46,7 +46,7 @@
         </div>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Cajitas', 'cajitas')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
         <section class="tarjeta flex items-center justify-between gap-4 p-5">
@@ -60,7 +60,7 @@
         </details>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

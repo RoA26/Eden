@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Presupuestos', 'presupuestos')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
         <div class="flex items-center justify-between gap-3">
@@ -39,7 +39,7 @@
                               th:text="${p.excedido()} ? 'Excedido en ' + ${@formato.pesos(p.restante().negate())}
                                                      : 'Quedan ' + ${@formato.pesos(p.restante())}">Quedan $ 0</span>
                         <form th:action="@{/presupuestos/{id}/eliminar(id=${p.idPresupuesto()})}" method="post"
-                              data-confirmar="¿Eliminar este presupuesto?">
+                              data-confirmar="¿Eliminar este presupuesto?" data-confirmar-accion="Eliminar">
                             <button type="submit" class="enlace-peligro text-xs">Eliminar</button>
                         </form>
                     </div>
@@ -73,7 +73,7 @@
         </section>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

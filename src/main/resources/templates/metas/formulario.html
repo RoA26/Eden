@@ -5,11 +5,12 @@
 <div class="marco" th:with="esNueva=${idMeta == null}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion(${esNueva} ? 'Nueva meta' : 'Editar meta', 'metas')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <p class="migas"><a th:href="@{/metas}">Metas</a></p>
 
         <p class="vacio" th:if="${cajitas.isEmpty()}">
-            Necesitas al menos una cajita activa. <a th:href="@{/cajitas}">Crear cajita</a>
+            Primero crea el bolsillo donde guardarás este ahorro (por ejemplo, tu cuenta de ahorros).
+            <a th:href="@{/cajitas}">Crear bolsillo de ahorro</a>
         </p>
 
         <form th:unless="${cajitas.isEmpty()}"
@@ -27,7 +28,7 @@
                    th:classappend="${#fields.hasErrors('montoObjetivo')} ? 'con-error'">
             <p class="error-campo" th:if="${#fields.hasErrors('montoObjetivo')}" th:errors="*{montoObjetivo}"></p>
 
-            <label for="idCajita">Cajita donde ahorras</label>
+            <label for="idCajita">¿Dónde guardas este ahorro?</label>
             <select id="idCajita" th:field="*{idCajita}">
                 <option th:each="c : ${cajitas}" th:value="${c.id}"
                         th:text="${c.nombre} + ' (' + ${@formato.pesos(c.saldo)} + ')'">Daniela</option>
@@ -45,7 +46,7 @@
         </form>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <div class="marco" th:with="esIngreso=${formulario.tipo.name() == 'INGRESO'}, esNuevo=${idMovimiento == null}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion(${esNuevo} ? (${esIngreso} ? 'Nuevo ingreso' : 'Nuevo gasto') : (${esIngreso} ? 'Editar ingreso' : 'Editar gasto'), 'movimientos')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <p class="migas"><a th:href="@{/movimientos}">Movimientos</a></p>
 
         <nav class="pestanas" th:if="${esNuevo}" aria-label="Tipo de movimiento">
@@ -52,17 +52,6 @@
             <p class="ayuda" th:unless="${esIngreso}">Obligatoria solo para costos operativos.</p>
             <p class="error-campo" th:if="${#fields.hasErrors('idFuente')}" th:errors="*{idFuente}"></p>
 
-            <th:block th:if="${esNuevo and !esIngreso and !cajitas.isEmpty()}">
-                <label for="idCajitaOrigen">Pagado desde</label>
-                <select id="idCajitaOrigen" th:field="*{idCajitaOrigen}"
-                        th:classappend="${#fields.hasErrors('idCajitaOrigen')} ? 'con-error'">
-                    <option value="">El disponible</option>
-                    <option th:each="c : ${cajitas}" th:value="${c.id}"
-                            th:text="${c.nombre} + ' (' + ${@formato.pesos(c.saldo)} + ')'">Atenea</option>
-                </select>
-                <p class="error-campo" th:if="${#fields.hasErrors('idCajitaOrigen')}" th:errors="*{idCajitaOrigen}"></p>
-            </th:block>
-
             <label for="descripcion">Descripción (opcional)</label>
             <input id="descripcion" type="text" th:field="*{descripcion}" maxlength="200">
             <p class="error-campo" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></p>
@@ -72,7 +61,7 @@
         </form>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

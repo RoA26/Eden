@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion(${cajita.nombre}, 'cajitas')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <p class="migas"><a th:href="@{/cajitas}">Cajitas</a></p>
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
@@ -97,7 +97,7 @@
             </form>
 
             <form th:action="@{/cajitas/{id}/estado(id=${cajita.id})}" method="post" class="mt-3"
-                  th:attr="data-confirmar=${cajita.activa} ? '¿Desactivar esta cajita?' : null">
+                  th:attr="data-confirmar=${cajita.activa} ? '¿Desactivar esta cajita?' : null" data-confirmar-accion="Desactivar">
                 <input type="hidden" name="activa" th:value="${!cajita.activa}">
                 <button type="submit" class="boton boton-bloque" th:classappend="${cajita.activa} ? 'boton-peligro' : 'boton-claro'"
                         th:text="${cajita.activa} ? 'Desactivar cajita' : 'Activar cajita'">Desactivar</button>
@@ -105,7 +105,7 @@
         </details>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <div class="marco" th:with="cal=${calendario}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Calendario', 'calendario')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: bannerCompartido}"></div>
 
         <div class="flex items-center justify-between gap-3">
@@ -54,7 +54,7 @@
         </div>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

@@ -5,25 +5,26 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Metas', 'metas')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
         <a class="boton boton-claro boton-bloque" th:href="@{/metas/nueva}">+ Nueva meta</a>
 
         <p class="vacio" th:if="${metas.isEmpty()}">
-            Una meta se vincula a una cajita y su progreso es el saldo de esa cajita. Por ejemplo: "Repuestos del motocarro", en Emergencia.
+            Tus metas son tu ahorro: define cuánto quieres reunir y para cuándo, y Eden te dice cuánto aportar cada mes.
+            <a th:href="@{/metas/nueva}">Crear meta</a>
         </p>
 
         <div class="space-y-3">
             <article class="tarjeta" th:each="pm : ${metas}" th:with="m=${pm.meta()}" th:classappend="${!m.activa} ? 'inactiva'">
                 <div class="tarjeta-fila">
-                    <h2 class="text-base" th:text="${m.nombre}">Moto nueva</h2>
+                    <h2 class="min-w-0 truncate text-base" th:text="${m.nombre}">Moto nueva</h2>
                     <strong class="tabular-nums text-esmeralda" th:text="${pm.porcentaje()} + '%'">40%</strong>
                 </div>
                 <progress class="barra" max="100" th:value="${pm.porcentaje()}" th:text="${pm.porcentaje()} + '%'"></progress>
                 <p class="tarjeta-detalle mt-2">
                     <span class="tabular-nums" th:text="${@formato.pesos(m.saldoCajita)} + ' de ' + ${@formato.pesos(m.montoObjetivo)}">$ 0 de $ 0</span>
-                    <span th:text="'En ' + ${m.nombreCajita}">En Daniela</span>
+                    <span class="max-w-[150px] truncate" th:text="'En ' + ${m.nombreCajita}" th:title="${m.nombreCajita}">En Daniela</span>
                     <span th:if="${m.fechaObjetivo}" th:text="'Para el ' + ${@formato.fecha(m.fechaObjetivo)}"></span>
                 </p>
                 <p class="nota mt-2 text-esmeralda" th:if="${pm.cumplida()}">¡Meta cumplida!</p>
@@ -32,22 +33,24 @@
                    th:text="'Faltan ' + ${@formato.pesos(pm.faltante())} + ': aporta ' + ${@formato.pesos(pm.aporteMensual())}
                             + ' al mes durante ' + ${pm.mesesRestantes()} + (${pm.mesesRestantes() == 1} ? ' mes.' : ' meses.')"></p>
                 <div class="acciones-fila">
+                    <a class="boton boton-principal boton-pequeno" th:if="${m.activa}"
+                       th:href="@{/cajitas/{id}(id=${m.idCajita})}">Aportar</a>
                     <a th:href="@{/metas/{id}/editar(id=${m.id})}">Editar</a>
                     <form th:action="@{/metas/{id}/estado(id=${m.id})}" method="post">
                         <input type="hidden" name="activa" th:value="${!m.activa}">
                         <button type="submit" class="enlace" th:text="${m.activa} ? 'Archivar' : 'Reactivar'">Archivar</button>
                     </form>
                     <form th:action="@{/metas/{id}/eliminar(id=${m.id})}" method="post" class="ml-auto"
-                          data-confirmar="¿Eliminar esta meta? El dinero sigue en su cajita.">
+                          data-confirmar="¿Eliminar esta meta? El dinero ahorrado no se pierde." data-confirmar-accion="Eliminar">
                         <button type="submit" class="enlace-peligro">Eliminar</button>
                     </form>
                 </div>
             </article>
         </div>
-        <p class="nota" th:unless="${metas.isEmpty()}">Si dos metas usan la misma cajita, ambas cuentan el mismo saldo.</p>
+        <p class="nota" th:unless="${metas.isEmpty()}">Si dos metas usan el mismo bolsillo de ahorro, ambas cuentan el mismo saldo.</p>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

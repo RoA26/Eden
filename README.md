@@ -25,6 +25,15 @@ abre un menú lateral sobre un fondo oscurecido y desenfocado; desde `md` el
 contenido es fluido y desde `lg` el menú es una barra lateral fija y el tablero
 se organiza en una rejilla de panel de control.
 
+- **Tema claro/oscuro**: `darkMode: 'class'`; los colores son variables CSS por
+  tema (`frontend/estilos/eden.css`). `static/js/tema.js` aplica la preferencia
+  guardada en `localStorage` antes de pintar y el interruptor Sol/Luna está en
+  la barra lateral, el menú móvil y la landing.
+- **Confirmaciones**: modal global (`$store.confirmacion`); los formularios con
+  `data-confirmar` lo usan en lugar de `window.confirm`.
+- **Navegación simplificada**: Cajitas y Presupuestos no aparecen en el menú ni
+  en el tablero; el ahorro se gestiona desde Metas. Los botones rápidos son solo
+  para gastos frecuentes.
 - **Landing pública** (`/`, plantilla `bienvenida.html`): presentación comercial;
   quien ya tiene sesión va directo a `/inicio`.
 - **Producido del día**: modal-calculadora (teclado numérico grande) para la

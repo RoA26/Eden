@@ -263,9 +263,70 @@
             }
         });
 
-        // Bloquea el scroll del fondo con el menu o un modal abiertos.
+        // Tema claro/oscuro: interruptor Sol/Luna. tema.js ya puso la clase al cargar.
+        Alpine.store('tema', {
+            oscuro: document.documentElement.classList.contains('dark'),
+
+            alternar() {
+                this.oscuro = !this.oscuro;
+                document.documentElement.classList.toggle('dark', this.oscuro);
+                try {
+                    window.localStorage.setItem('eden:tema', this.oscuro ? 'oscuro' : 'claro');
+                } catch (e) {
+                    // sin almacenamiento el cambio dura hasta recargar
+                }
+                window.dispatchEvent(new CustomEvent('eden:tema', { detail: { oscuro: this.oscuro } }));
+            },
+            etiqueta() {
+                return this.oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+            }
+        });
+
+        // Confirmacion global (reemplaza window.confirm): preguntar() devuelve una promesa.
+        Alpine.store('confirmacion', {
+            abierto: false,
+            mensaje: '',
+            accion: 'Confirmar',
+            peligro: false,
+            resolver: null,
+
+            preguntar(mensaje, accion) {
+                if (this.resolver) {
+                    this.resolver(false);
+                }
+                this.mensaje = mensaje;
+                this.accion = accion || 'Confirmar';
+                this.peligro = /eliminar|quitar|desactivar|omitir/i.test(this.accion + ' ' + mensaje);
+                this.abierto = true;
+                const self = this;
+                window.setTimeout(function () {
+                    const boton = document.querySelector('[data-confirmacion-cancelar]');
+                    if (boton) {
+                        boton.focus({ preventScroll: true });
+                    }
+                }, 80);
+                return new Promise(function (resolve) { self.resolver = resolve; });
+            },
+            responder(respuesta) {
+                this.abierto = false;
+                const resolver = this.resolver;
+                this.resolver = null;
+                if (resolver) {
+                    resolver(respuesta);
+                }
+            },
+            aceptar() {
+                this.responder(true);
+            },
+            cancelar() {
+                this.responder(false);
+            }
+        });
+
+        // Bloquea el scroll del fondo con el menu, un modal o la confirmacion abiertos.
         Alpine.effect(function () {
-            document.documentElement.classList.toggle('overflow-hidden', Alpine.store('ui').bloqueado);
+            document.documentElement.classList.toggle('overflow-hidden',
+                Alpine.store('ui').bloqueado || Alpine.store('confirmacion').abierto);
         });
 
         // Raiz de cada pagina (<body>): muestra como tostada los avisos flash del servidor.
@@ -278,6 +339,10 @@
                     });
                 },
                 escape() {
+                    if (Alpine.store('confirmacion').abierto) {
+                        Alpine.store('confirmacion').responder(false);
+                        return;
+                    }
                     Alpine.store('ui').cerrarTodo();
                 }
             };
@@ -376,8 +441,65 @@
                 },
                 alReiniciar() {
                     this.tipo = 'GASTO';
+                },
+                /** Sugerencias de gasto frecuente: <button data-nombre="Transporte" data-categoria="Transporte"> */
+                sugerir(evento) {
+                    const boton = evento.currentTarget;
+                    const formulario = boton.closest('form');
+                    formulario.elements.nombre.value = boton.getAttribute('data-nombre');
+                    const categoria = boton.getAttribute('data-categoria');
+                    formulario.querySelectorAll('select[name="idCategoria"] option').forEach(function (opcion) {
+                        if (opcion.textContent.trim() === categoria) {
+                            opcion.parentElement.closest('select').value = opcion.value;
+                        }
+                    });
+                    const monto = formulario.elements.monto;
+                    if (monto) {
+                        monto.focus();
+                    }
                 }
             });
+        });
+
+        // "Cargar mas" en listas paginadas: trae la pagina siguiente y agrega sus filas.
+        // Sin JavaScript, el boton es un enlace normal a la pagina siguiente.
+        Alpine.data('cargarMas', function () {
+            return {
+                cargando: false,
+
+                async cargar(evento) {
+                    const enlace = evento.currentTarget;
+                    if (this.cargando) {
+                        return;
+                    }
+                    this.cargando = true;
+                    try {
+                        const respuesta = await fetch(enlace.href, { headers: { Accept: 'text/html' }, credentials: 'same-origin' });
+                        if (!respuesta.ok) {
+                            throw new Error('HTTP ' + respuesta.status);
+                        }
+                        const documento = new DOMParser().parseFromString(await respuesta.text(), 'text/html');
+                        const destino = document.getElementById(enlace.getAttribute('data-lista'));
+                        const origen = documento.getElementById(enlace.getAttribute('data-lista'));
+                        if (destino && origen) {
+                            Array.from(origen.children).forEach(function (fila) {
+                                fila.classList.add('animate-aparecer');
+                                destino.appendChild(document.importNode(fila, true));
+                            });
+                        }
+                        const siguiente = documento.querySelector('[data-cargar-mas]');
+                        if (siguiente) {
+                            enlace.href = siguiente.getAttribute('href');
+                        } else {
+                            enlace.remove();
+                        }
+                    } catch (error) {
+                        Alpine.store('avisos').mostrar('No se pudieron cargar más movimientos. Intenta de nuevo.', 'error');
+                    } finally {
+                        this.cargando = false;
+                    }
+                }
+            };
         });
 
         // Calculadora del producido del dia: teclado numerico grande, sin formularios largos.
@@ -483,7 +605,9 @@
                 },
                 async quitar(evento) {
                     const formulario = evento.target;
-                    if (!window.confirm(formulario.getAttribute('data-pregunta') || '¿Eliminar este botón?')) {
+                    const confirmado = await Alpine.store('confirmacion').preguntar(
+                        formulario.getAttribute('data-pregunta') || '¿Eliminar este botón?', 'Eliminar');
+                    if (!confirmado) {
                         return;
                     }
                     try {
@@ -518,13 +642,24 @@
 
     // ------------------------------------------------------------------ utilidades sin Alpine
 
-    // Confirmacion antes de enviar formularios destructivos: <form data-confirmar="¿Seguro?">
+    // Confirmacion antes de enviar formularios destructivos con el modal global:
+    // <form data-confirmar="¿Eliminar este movimiento?" data-confirmar-accion="Eliminar">.
+    // Si Alpine no cargo, el formulario se envia directo (nunca se usa window.confirm).
     document.addEventListener('submit', function (evento) {
         const formulario = evento.target;
         const mensaje = formulario.getAttribute && formulario.getAttribute('data-confirmar');
-        if (mensaje && !window.confirm(mensaje)) {
-            evento.preventDefault();
+        if (!mensaje || !window.Alpine) {
+            return;
         }
+        evento.preventDefault();
+        window.Alpine.store('confirmacion')
+            .preguntar(mensaje, formulario.getAttribute('data-confirmar-accion'))
+            .then(function (confirmado) {
+                if (confirmado) {
+                    // submit() del prototipo no vuelve a disparar el evento "submit"
+                    HTMLFormElement.prototype.submit.call(formulario);
+                }
+            });
     });
 
     // Mostrar u ocultar la contrasena: <button data-alternar-contrasena="idDelInput">

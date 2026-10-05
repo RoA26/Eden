@@ -5,26 +5,29 @@
 <div class="nubes" aria-hidden="true"><span></span><span></span><span></span></div>
 
 <!-- ================================================================ Navbar publico -->
-<header class="sticky top-0 z-40 border-b border-white/5 bg-fondo/70 backdrop-blur-xl" x-data="menuPublico"
+<header class="sticky top-0 z-40 border-b border-borde bg-fondo/70 backdrop-blur-xl" x-data="menuPublico"
         @keydown.escape.window="cerrar">
-    <nav class="landing-contenedor flex h-16 items-center justify-between md:h-20" aria-label="Principal">
+    <nav class="landing-contenedor flex h-16 items-center justify-between gap-3 md:h-20" aria-label="Principal">
         <a th:href="@{/}" class="flex items-center gap-2.5">
             <img class="h-9 w-9 rounded-xl ring-1 ring-borde-fuerte" th:src="@{/iconos/icono-192.png}" alt="" width="36" height="36">
-            <span class="text-xl font-extrabold tracking-tight text-white" th:text="${nombreApp ?: 'Eden'}">Eden</span>
+            <span class="text-xl font-extrabold tracking-tight text-tinta" th:text="${nombreApp ?: 'Eden'}">Eden</span>
         </a>
 
-        <!-- Escritorio y tableta -->
-        <div class="hidden items-center gap-2 sm:flex">
-            <a th:href="@{/login}" class="boton-fantasma">Iniciar sesión</a>
-            <a th:href="@{/registro}" class="boton boton-principal">Empezar gratis</a>
+        <div class="flex items-center gap-2">
+            <button type="button" class="boton-icono" @click="$store.tema.alternar()" :aria-label="$store.tema.etiqueta()"
+                    :aria-pressed="$store.tema.oscuro ? 'true' : 'false'">
+                <th:block th:replace="~{fragmentos/navegacion :: iconosTema}"></th:block>
+            </button>
+            <!-- Escritorio y tableta -->
+            <a th:href="@{/login}" class="boton-fantasma hidden sm:inline-flex">Iniciar sesión</a>
+            <a th:href="@{/registro}" class="boton boton-principal hidden sm:inline-flex">Empezar gratis</a>
+            <!-- Telefono: los botones colapsan en un menu -->
+            <button type="button" class="boton-icono sm:hidden" aria-controls="menu-publico" aria-label="Abrir menú"
+                    :aria-expanded="abierto ? 'true' : 'false'" @click="alternar">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            </button>
         </div>
-
-        <!-- Telefono: los botones colapsan en un menu -->
-        <button type="button" class="boton-icono sm:hidden" aria-controls="menu-publico" aria-label="Abrir menú"
-                :aria-expanded="abierto ? 'true' : 'false'" @click="alternar">
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                 stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
-        </button>
     </nav>
     <div id="menu-publico" class="landing-contenedor grid gap-2 pb-4 sm:hidden" x-cloak x-show="abierto"
          x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2"
@@ -40,149 +43,160 @@
     </noscript>
 </header>
 
-<main class="relative z-10">
+<main class="animate-fade-in relative z-10">
     <!-- ============================================================ Hero -->
-    <section class="landing-contenedor pb-16 pt-14 text-center md:pb-24 md:pt-24" aria-labelledby="titular">
+    <section class="landing-contenedor pb-10 pt-14 text-center md:pt-24" aria-labelledby="titular">
         <p class="chip mx-auto mb-6 border-esmeralda/20 bg-esmeralda/10 text-esmeralda-claro">
-            <span class="h-1.5 w-1.5 rounded-full bg-esmeralda"></span>Finanzas personales para el día a día
+            <span class="h-1.5 w-1.5 rounded-full bg-esmeralda"></span>Finanzas para freelancers
         </p>
-        <h1 id="titular" class="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white md:text-6xl">
-            Tu dinero, sin fricción.
+        <h1 id="titular" class="mx-auto max-w-4xl text-5xl font-extrabold leading-[1.05] tracking-tight text-tinta sm:text-6xl md:text-7xl lg:text-8xl">
+            Tu dinero, sin fricción
         </h1>
-        <p class="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-gray-400 md:text-lg">
-            Registra, organiza y alcanza tus metas financieras con una experiencia diseñada para no estorbar.
+        <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-tinta-suave md:text-lg">
+            Registra tus ingresos, controla tus gastos y alcanza tus metas. Diseñado para el ritmo de un
+            freelancer, sin interfaces que estorban.
         </p>
         <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a th:href="@{/registro}" class="boton boton-principal boton-grande w-full sm:w-auto">
-                Comienza a controlar tu dinero
+                Crea tu espacio de trabajo
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
             <a th:href="@{/login}" class="boton-fantasma boton-grande w-full sm:w-auto">Ya tengo cuenta</a>
         </div>
 
-        <!-- ======================================================== Gancho visual -->
-        <p class="sr-only">Vista previa de Eden: saldo total, botones rápidos y una cajita de ahorro.</p>
-        <div class="relative mx-auto mt-16 max-w-4xl text-left md:mt-20" aria-hidden="true">
-            <!-- resplandor -->
-            <div class="absolute inset-x-10 -top-10 bottom-10 rounded-full bg-esmeralda/20 blur-3xl"></div>
+        <!-- ======================================================== Gancho visual: ilusion de la app -->
+        <p class="sr-only">Vista previa de Eden: saldo total e ingreso reciente.</p>
+        <div class="relative mx-auto mt-16 max-w-3xl text-left md:mt-20" aria-hidden="true">
+            <div class="absolute inset-x-12 -top-8 bottom-16 rounded-full bg-esmeralda/20 blur-3xl"></div>
 
-            <div class="relative rounded-[2rem] border border-white/10 bg-white/[0.03] p-4 shadow-suave backdrop-blur-md md:p-8">
-                <div class="grid gap-4 md:grid-cols-5">
-                    <!-- Saldo y grafica -->
-                    <div class="rounded-2xl border border-white/10 bg-fondo/60 p-5 md:col-span-3">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-tinta-tenue">Saldo total</p>
-                        <p class="mt-2 text-4xl font-extrabold tabular-nums tracking-tight text-esmeralda md:text-5xl">$ 2.480.000</p>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <span class="chip border-esmeralda/20 text-esmeralda-claro">+ 12% este mes</span>
-                            <span class="chip">En cajitas <strong>$ 1.150.000</strong></span>
+            <div class="tarjeta-flotante relative rounded-[2rem] border border-borde-fuerte bg-superficie p-5 shadow-suave backdrop-blur-md md:p-8">
+                <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-2 text-sm font-semibold text-tinta">
+                        <span class="h-2.5 w-2.5 rounded-full bg-esmeralda"></span>Mi espacio
+                    </span>
+                    <span class="chip">octubre</span>
+                </div>
+                <p class="mt-8 text-[11px] font-semibold uppercase tracking-[0.14em] text-tinta-tenue">Saldo total</p>
+                <p class="mt-2 text-5xl font-extrabold tabular-nums tracking-tight text-tinta md:text-6xl">$ 4.820.000</p>
+                <span class="chip mt-3 border-esmeralda/20 text-esmeralda-claro">+ 18% frente al mes pasado</span>
+
+                <div class="mt-8 rounded-2xl border border-borde bg-fondo/60 p-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-tinta-tenue">Ingreso reciente</p>
+                    <div class="mt-3 flex items-center gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-esmeralda/10 font-bold text-esmeralda">+</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-semibold text-tinta">Pago proyecto diseño web</p>
+                            <p class="text-xs text-tinta-tenue">Hoy · Cliente Estudio Norte</p>
                         </div>
-                        <div class="mt-6 flex h-24 items-end gap-2">
-                            <span class="h-10 flex-1 rounded-md bg-esmeralda/30"></span>
-                            <span class="h-14 flex-1 rounded-md bg-esmeralda/40"></span>
-                            <span class="h-8 flex-1 rounded-md bg-esmeralda/30"></span>
-                            <span class="h-16 flex-1 rounded-md bg-esmeralda/50"></span>
-                            <span class="h-12 flex-1 rounded-md bg-esmeralda/40"></span>
-                            <span class="h-20 flex-1 rounded-md bg-esmeralda/60"></span>
-                            <span class="h-24 flex-1 rounded-md bg-esmeralda"></span>
-                        </div>
+                        <span class="font-bold tabular-nums text-esmeralda">+ $ 1.200.000</span>
                     </div>
-
-                    <!-- Botones rapidos simulados -->
-                    <div class="grid grid-cols-2 gap-3 md:col-span-2 md:grid-cols-1">
-                        <div class="rapido rapido-gasto pointer-events-none">
-                            <span class="rapido-nombre">Moto</span>
-                            <span class="rapido-monto monto-gasto">− $ 5.000</span>
-                            <span class="rapido-categoria">Transporte</span>
+                </div>
+                <div class="mt-3 rounded-2xl border border-borde bg-fondo/60 p-4">
+                    <div class="flex items-center gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-coral/10 font-bold text-coral-claro">−</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-semibold text-tinta">Transporte</p>
+                            <p class="text-xs text-tinta-tenue">Ayer · Gasto frecuente</p>
                         </div>
-                        <div class="rapido rapido-ingreso pointer-events-none">
-                            <span class="rapido-nombre">Venta postre</span>
-                            <span class="rapido-monto monto-ingreso">+ $ 12.000</span>
-                            <span class="rapido-categoria">Ventas</span>
-                        </div>
-                        <div class="rapido rapido-ingreso pointer-events-none col-span-2 md:col-span-1">
-                            <span class="rapido-nombre">Producido</span>
-                            <span class="rapido-monto monto-ingreso">+ $ 120.000</span>
-                            <span class="rapido-categoria">Motocarro</span>
-                        </div>
+                        <span class="font-bold tabular-nums text-coral-claro">− $ 9.000</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Tarjetas flotantes -->
-            <div class="tarjeta-flotante absolute -right-3 -top-6 hidden w-56 sm:block md:-right-10">
-                <div class="flex items-center gap-3">
-                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-esmeralda/15 font-bold text-esmeralda">+</span>
-                    <div>
-                        <p class="text-sm font-semibold text-tinta">Registrado</p>
-                        <p class="text-xs tabular-nums text-esmeralda-claro">Venta postre · + $ 12.000</p>
-                    </div>
-                </div>
-            </div>
-            <div class="tarjeta-flotante tarjeta-flotante-lenta absolute -bottom-8 -left-3 hidden w-60 sm:block md:-left-10">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="font-semibold text-tinta">Cajita Emergencia</span>
-                    <span class="font-semibold tabular-nums text-esmeralda">68%</span>
-                </div>
-                <div class="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                    <div class="h-full w-2/3 rounded-full bg-esmeralda"></div>
-                </div>
-                <p class="mt-2 text-xs text-tinta-tenue">$ 680.000 de $ 1.000.000</p>
-            </div>
+            <!-- Degradado inferior: el mockup se funde con el fondo de la pagina -->
+            <div class="pointer-events-none absolute inset-x-0 -bottom-px h-48 bg-gradient-to-t from-fondo via-fondo/80 to-transparent"></div>
         </div>
     </section>
 
-    <!-- ============================================================ Beneficios -->
-    <section class="landing-contenedor py-16 md:py-24" aria-labelledby="titulo-beneficios">
-        <h2 id="titulo-beneficios" class="mx-auto max-w-2xl text-center text-2xl font-bold tracking-tight text-white md:text-4xl">
-            Menos formularios. Más claridad.
+    <!-- ============================================================ Bento grid (valor) -->
+    <section class="landing-contenedor py-16 md:py-24" aria-labelledby="titulo-valor">
+        <h2 id="titulo-valor" class="mx-auto max-w-2xl text-center text-3xl font-bold tracking-tight text-tinta md:text-5xl">
+            Hecho para no estorbar.
         </h2>
-        <div class="mt-12 grid gap-4 md:grid-cols-3 md:gap-6">
-            <article class="tarjeta p-6">
-                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-esmeralda/10 text-esmeralda">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                         stroke-linejoin="round" aria-hidden="true"><path d="M13 3 4 14h7l-1 7 9-11h-7z"/></svg>
-                </span>
-                <h3 class="mt-5 text-lg">Un toque, un registro</h3>
-                <p class="mt-2 text-sm leading-relaxed text-gray-400">
-                    Crea botones rápidos para lo que repites cada día y regístralo sin abrir un formulario.
-                </p>
+        <div class="mt-12 grid gap-4 md:grid-cols-3 md:grid-rows-2 md:gap-6">
+            <!-- 1) Friccion cero: ancha -->
+            <article class="tarjeta flex flex-col justify-between gap-8 p-6 md:col-span-2 md:p-8">
+                <div>
+                    <span class="chip border-esmeralda/20 text-esmeralda-claro">Fricción cero</span>
+                    <h3 class="mt-4 text-2xl font-bold tracking-tight md:text-3xl">Un toque, un registro.</h3>
+                    <p class="mt-2 max-w-md text-sm leading-relaxed text-tinta-suave">
+                        Tus gastos frecuentes quedan a un toque de distancia. Sin formularios, sin recargar la página.
+                    </p>
+                </div>
+                <div class="grid grid-cols-3 gap-3" aria-hidden="true">
+                    <div class="rapido rapido-gasto pointer-events-none">
+                        <span class="rapido-nombre max-w-[100px] truncate">Transporte</span>
+                        <span class="rapido-monto monto-gasto">− $ 9.000</span>
+                    </div>
+                    <div class="rapido rapido-gasto pointer-events-none">
+                        <span class="rapido-nombre max-w-[100px] truncate">Comida</span>
+                        <span class="rapido-monto monto-gasto">− $ 18.000</span>
+                    </div>
+                    <div class="rapido rapido-gasto pointer-events-none">
+                        <span class="rapido-nombre max-w-[100px] truncate">Café</span>
+                        <span class="rapido-monto monto-gasto">− $ 6.000</span>
+                    </div>
+                </div>
             </article>
-            <article class="tarjeta p-6">
-                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-esmeralda/10 text-esmeralda">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                         stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v4H3zM5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M10 15h4"/></svg>
-                </span>
-                <h3 class="mt-5 text-lg">Cajitas para cada propósito</h3>
-                <p class="mt-2 text-sm leading-relaxed text-gray-400">
-                    Reparte lo que entra según tus porcentajes: ahorro, emergencias, gustos. Sin hojas de cálculo.
-                </p>
+
+            <!-- 2) Metas claras: alta -->
+            <article class="tarjeta flex flex-col gap-6 p-6 md:row-span-2 md:p-8">
+                <div>
+                    <span class="chip border-esmeralda/20 text-esmeralda-claro">Metas claras</span>
+                    <h3 class="mt-4 text-2xl font-bold tracking-tight">Sabes cuánto falta. Siempre.</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-tinta-suave">
+                        Define cuánto quieres reunir y para cuándo. Eden calcula tu aporte mensual.
+                    </p>
+                </div>
+                <div class="mt-auto space-y-5" aria-hidden="true">
+                    <div>
+                        <div class="flex justify-between text-sm"><span class="font-semibold">Portátil nuevo</span><span class="tabular-nums text-esmeralda">72%</span></div>
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-realce/10"><div class="h-full w-[72%] rounded-full bg-esmeralda"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm"><span class="font-semibold">Fondo de emergencia</span><span class="tabular-nums text-esmeralda">45%</span></div>
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-realce/10"><div class="h-full w-[45%] rounded-full bg-esmeralda"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm"><span class="font-semibold">Viaje de fin de año</span><span class="tabular-nums text-esmeralda">20%</span></div>
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-realce/10"><div class="h-full w-1/5 rounded-full bg-esmeralda"></div></div>
+                    </div>
+                    <p class="rounded-xl border border-borde bg-fondo/60 px-3 py-2 text-xs text-tinta-suave">
+                        Aporta <strong class="tabular-nums text-tinta">$ 350.000</strong> al mes para llegar a tiempo.
+                    </p>
+                </div>
             </article>
-            <article class="tarjeta p-6">
-                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-esmeralda/10 text-esmeralda">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                         stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg>
-                </span>
-                <h3 class="mt-5 text-lg">Metas que se cumplen</h3>
-                <p class="mt-2 text-sm leading-relaxed text-gray-400">
-                    Eden calcula cuánto aportar cada mes y te avisa antes de pasarte de tu presupuesto.
-                </p>
+
+            <!-- 3) Modo claro / oscuro: ancha, y funciona de verdad -->
+            <article class="tarjeta flex flex-col items-start justify-between gap-6 p-6 sm:flex-row sm:items-center md:col-span-2 md:p-8">
+                <div>
+                    <span class="chip">Dark / Light mode</span>
+                    <h3 class="mt-4 text-2xl font-bold tracking-tight md:text-3xl">Cómodo de día y de noche.</h3>
+                    <p class="mt-2 max-w-md text-sm leading-relaxed text-tinta-suave">
+                        Asfalto oscuro para la noche, blanco perla para el día. Tu elección se recuerda en cada visita.
+                    </p>
+                </div>
+                <button type="button" class="boton boton-claro boton-grande shrink-0" x-data
+                        @click="$store.tema.alternar()" :aria-pressed="$store.tema.oscuro ? 'true' : 'false'">
+                    <th:block th:replace="~{fragmentos/navegacion :: iconosTema}"></th:block>
+                    <span x-text="$store.tema.oscuro ? 'Probar modo claro' : 'Probar modo oscuro'">Cambiar tema</span>
+                </button>
             </article>
         </div>
     </section>
 
     <!-- ============================================================ Llamado final -->
     <section class="landing-contenedor pb-20 md:pb-28">
-        <div class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] px-6 py-12 text-center backdrop-blur-md md:py-16">
+        <div class="relative overflow-hidden rounded-[2rem] border border-borde-fuerte bg-superficie px-6 py-12 text-center backdrop-blur-md md:py-16">
             <div class="absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-esmeralda/20 blur-3xl" aria-hidden="true"></div>
-            <h2 class="relative text-2xl font-bold tracking-tight text-white md:text-4xl">Empieza hoy. Tarda menos de un minuto.</h2>
-            <p class="relative mx-auto mt-3 max-w-xl text-gray-400">Tu primer registro puede ser el producido de hoy.</p>
-            <a th:href="@{/registro}" class="boton boton-principal boton-grande relative mt-8 w-full sm:w-auto">Empezar gratis</a>
+            <h2 class="relative text-3xl font-bold tracking-tight text-tinta md:text-5xl">Tu espacio está listo en un minuto.</h2>
+            <p class="relative mx-auto mt-3 max-w-xl text-tinta-suave">Empieza con el ingreso de hoy. El resto se ordena solo.</p>
+            <a th:href="@{/registro}" class="boton boton-principal boton-grande relative mt-8 w-full sm:w-auto">Crea tu espacio de trabajo</a>
         </div>
     </section>
 </main>
 
-<footer class="relative z-10 border-t border-white/5">
+<footer class="relative z-10 border-t border-borde">
     <div class="landing-contenedor flex flex-col items-center justify-between gap-3 py-8 text-sm text-tinta-tenue sm:flex-row">
         <p><span class="font-semibold text-tinta-suave" th:text="${nombreApp ?: 'Eden'}">Eden</span> · Lo que entra, lo que sale y lo que guardas.</p>
         <a th:href="@{/login}" class="hover:text-tinta">Iniciar sesión</a>

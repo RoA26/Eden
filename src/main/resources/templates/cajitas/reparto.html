@@ -5,7 +5,7 @@
 <div class="marco" th:with="p=${reparto.propuesta()}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Repartir', 'cajitas')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <p class="migas"><a th:href="@{/cajitas}">Cajitas</a></p>
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
@@ -52,7 +52,7 @@
         </form>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <div class="marco" th:with="esNuevo=${idRecurrente == null}">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion(${esNuevo} ? 'Nuevo recurrente' : 'Editar recurrente', 'recurrentes')}"></th:block>
 
-<main class="contenido">
+<main class="animate-fade-in contenido">
     <p class="migas"><a th:href="@{/recurrentes}">Recurrentes</a></p>
 
     <form th:action="${esNuevo} ? @{/recurrentes/nuevo} : @{/recurrentes/{id}/editar(id=${idRecurrente})}"
@@ -78,7 +78,7 @@
     </form>
 </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

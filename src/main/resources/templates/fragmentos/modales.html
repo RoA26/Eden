@@ -7,12 +7,12 @@
     token CSRF que agrega Thymeleaf) y Alpine lo intercepta (@submit.prevent)
     para enviarlo por fetch al endpoint JSON de data-api.
     Requiere en el modelo: categoriasIngreso, categoriasGasto, categoriasCosto,
-    fuentes, cajitasActivas, tiposCategoria y hoy (ver InicioController).
+    fuentes, tiposCategoria y hoy (ver InicioController).
 -->
 <th:block th:fragment="modales">
     <div th:replace="~{fragmentos/componentes :: modal('producido', 'Producido del día', ~{fragmentos/modales :: formProducido(null)})}"></div>
     <div th:replace="~{fragmentos/componentes :: modal('movimiento', 'Registrar movimiento', ~{fragmentos/modales :: formMovimiento})}"></div>
-    <div th:replace="~{fragmentos/componentes :: modal('atajo', 'Nuevo botón rápido', ~{fragmentos/modales :: formAtajo})}"></div>
+    <div th:replace="~{fragmentos/componentes :: modal('atajo', 'Nuevo gasto frecuente', ~{fragmentos/modales :: formAtajo})}"></div>
     <div th:replace="~{fragmentos/componentes :: modal('categoria', 'Nueva categoría', ~{fragmentos/modales :: formCategoria})}"></div>
 </th:block>
 
@@ -72,7 +72,7 @@
 
     <p class="aviso aviso-error" role="alert" x-cloak x-show="errorGeneral" x-text="errorGeneral"></p>
 
-    <div class="rounded-3xl border border-borde bg-black/20 px-4 pb-4 pt-5 text-center">
+    <div class="rounded-3xl border border-borde bg-hundido px-4 pb-4 pt-5 text-center">
         <label for="producido-monto" class="text-xs font-semibold uppercase tracking-wider text-tinta-tenue">¿Cuánto hiciste hoy?</label>
         <input id="producido-monto" name="monto" type="text" inputmode="numeric" autocomplete="off" placeholder="$ 0"
                class="calculadora-pantalla mt-2" :value="texto()" @input="escribir">
@@ -83,7 +83,7 @@
             <label class="chip-opcion has-[:checked]:border-esmeralda/40 has-[:checked]:bg-esmeralda/10 has-[:checked]:text-esmeralda-claro"
                    th:each="f, estado : ${fuentes}">
                 <input type="radio" name="idFuente" class="sr-only" th:value="${f.id}" th:checked="${estado.first}">
-                <span th:text="${f.nombre}">Motocarro</span>
+                <span class="max-w-[150px] truncate" th:text="${f.nombre}" th:title="${f.nombre}">Motocarro</span>
             </label>
         </div>
     </div>
@@ -138,17 +138,6 @@
     <p class="ayuda" x-show="esGasto()">Obligatoria solo para costos operativos.</p>
     <p class="error-campo" data-error-de="idFuente" x-cloak x-show="tieneError('idFuente')" x-text="errores.idFuente"></p>
 
-    <th:block th:unless="${cajitasActivas == null or cajitasActivas.isEmpty()}">
-        <label for="mov-cajita" x-show="esGasto()">Pagado desde</label>
-        <select id="mov-cajita" name="idCajitaOrigen" x-show="esGasto()" :disabled="esIngreso()"
-                :class="claseError('idCajitaOrigen')">
-            <option value="">El disponible</option>
-            <option th:each="c : ${cajitasActivas}" th:value="${c.id}"
-                    th:text="${c.nombre} + ' (' + ${@formato.pesos(c.saldo)} + ')'">Atenea</option>
-        </select>
-        <p class="error-campo" data-error-de="idCajitaOrigen" x-cloak x-show="tieneError('idCajitaOrigen')"
-           x-text="errores.idCajitaOrigen"></p>
-    </th:block>
 
     <div class="grid grid-cols-2 gap-3">
         <div class="grid gap-1.5">
@@ -170,18 +159,25 @@
 </form>
 
 <!-- Crear un boton rapido (plantilla de registro de un toque) -->
+<!-- Crear un gasto frecuente (boton rapido de un toque). Solo gastos: el tipo va fijo. -->
 <form th:fragment="formAtajo" th:action="@{/atajos}" method="post" class="formulario" novalidate
       x-data="formularioConTipo" @submit.prevent="enviar"
       th:attr="data-api=@{/api/atajos}" data-refrescar="atajos">
-    <p class="ayuda -mt-2 mb-2">Un toque en el botón registra el movimiento con la fecha de hoy.</p>
+    <input type="hidden" name="tipo" value="GASTO">
+    <p class="ayuda -mt-2 mb-2">Un toque en el botón registra el gasto con la fecha de hoy.</p>
     <p class="aviso aviso-error" role="alert" x-cloak x-show="errorGeneral" x-text="errorGeneral"></p>
 
-    <div th:replace="~{fragmentos/modales :: selectorTipo}"></div>
+    <div class="flex flex-wrap gap-2" aria-label="Sugerencias">
+        <button type="button" class="chip-opcion" data-nombre="Transporte" data-categoria="Transporte" @click="sugerir">Transporte</button>
+        <button type="button" class="chip-opcion" data-nombre="Comida" data-categoria="Alimentación" @click="sugerir">Comida</button>
+        <button type="button" class="chip-opcion" data-nombre="Café" data-categoria="Alimentación" @click="sugerir">Café</button>
+        <button type="button" class="chip-opcion" data-nombre="Gasolina" data-categoria="Combustible" @click="sugerir">Gasolina</button>
+    </div>
 
     <div class="grid grid-cols-[1fr_auto] gap-3">
         <div class="grid gap-1.5">
             <label for="atajo-nombre" class="etiqueta">Nombre del botón</label>
-            <input id="atajo-nombre" name="nombre" type="text" class="campo" maxlength="30" placeholder="Ej. Moto"
+            <input id="atajo-nombre" name="nombre" type="text" class="campo" maxlength="30" placeholder="Ej. Transporte"
                    :class="claseError('nombre')" autofocus>
         </div>
         <div class="grid w-36 gap-1.5">
@@ -200,12 +196,11 @@
         <option value="">Ninguna</option>
         <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}">Motocarro</option>
     </select>
-    <p class="ayuda" x-show="esGasto()">Obligatoria para costos operativos, como la gasolina del motocarro.</p>
-    <p class="ayuda" x-cloak x-show="esIngreso()">Un ingreso con fuente se registra una sola vez por día (producido diario).</p>
+    <p class="ayuda">Obligatoria para costos operativos, como la gasolina del motocarro.</p>
     <p class="error-campo" data-error-de="idFuente" x-cloak x-show="tieneError('idFuente')" x-text="errores.idFuente"></p>
 
     <button type="submit" class="boton boton-principal boton-bloque" :disabled="enviando">
-        <span class="spinner" x-cloak x-show="enviando"></span>Crear botón
+        <span class="spinner" x-cloak x-show="enviando"></span>Crear gasto frecuente
     </button>
 </form>
 

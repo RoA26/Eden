@@ -5,7 +5,7 @@
 <div class="marco">
     <th:block th:replace="~{fragmentos/navegacion :: navegacion('Compartir mi cuenta', 'compartir')}"></th:block>
 
-    <main class="contenido">
+    <main class="animate-fade-in contenido">
         <div th:replace="~{fragmentos/componentes :: avisos}"></div>
 
         <p class="ayuda text-sm">Las personas que agregues podrán ver tu tablero, tus movimientos y tu calendario,
@@ -24,7 +24,7 @@
                         </p>
                     </div>
                     <form th:action="@{/compartir/{id}/revocar(id=${a.id()})}" method="post"
-                          data-confirmar="¿Quitar el acceso a esta persona?">
+                          data-confirmar="¿Quitar el acceso a esta persona?" data-confirmar-accion="Quitar acceso">
                         <button type="submit" class="enlace-peligro text-xs">Quitar acceso</button>
                     </form>
                 </div>
@@ -54,7 +54,7 @@
         </section>
     </main>
 
-    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: globales}"></div>
 </div>
 </body>
 </html>

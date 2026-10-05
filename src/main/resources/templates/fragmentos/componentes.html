@@ -33,6 +33,45 @@
     <p th:if="${error}" class="aviso aviso-error" role="alert" data-aviso-inicial="error" th:text="${error}"></p>
 </div>
 
+<!-- Piezas globales de cada pagina: avisos flotantes y modal de confirmacion -->
+<th:block th:fragment="globales">
+    <div th:replace="~{fragmentos/componentes :: tostadas}"></div>
+    <div th:replace="~{fragmentos/componentes :: confirmacion}"></div>
+</th:block>
+
+<!--
+    Modal global de confirmacion (reemplaza window.confirm). Lo abren los
+    formularios con data-confirmar y $store.confirmacion.preguntar() en eden.js.
+-->
+<div th:fragment="confirmacion" class="fixed inset-0 z-[70] grid place-items-center p-4" x-cloak
+     x-show="$store.confirmacion.abierto" role="alertdialog" aria-modal="true"
+     aria-labelledby="confirmacion-titulo" aria-describedby="confirmacion-mensaje">
+    <div class="velo" x-show="$store.confirmacion.abierto" x-transition.opacity.duration.200ms
+         @click="$store.confirmacion.cancelar()"></div>
+    <section class="modal-panel max-w-sm text-center"
+             x-show="$store.confirmacion.abierto"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl"
+              :class="$store.confirmacion.peligro ? 'bg-coral/10 text-coral-claro' : 'bg-esmeralda/10 text-esmeralda'" aria-hidden="true">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        </span>
+        <h2 id="confirmacion-titulo" class="mt-4 text-lg font-bold">¿Estás seguro?</h2>
+        <p id="confirmacion-mensaje" class="mt-1.5 text-sm text-tinta-suave" x-text="$store.confirmacion.mensaje"></p>
+        <div class="mt-6 grid grid-cols-2 gap-2">
+            <button type="button" class="boton boton-claro" data-confirmacion-cancelar
+                    @click="$store.confirmacion.cancelar()">Cancelar</button>
+            <button type="button" class="boton" :class="$store.confirmacion.peligro ? 'boton-peligro-solido' : 'boton-principal'"
+                    x-text="$store.confirmacion.accion" @click="$store.confirmacion.aceptar()">Confirmar</button>
+        </div>
+    </section>
+</div>
+
 <!-- Avisos flotantes ("tostadas"), con accion opcional como "Deshacer" -->
 <div th:fragment="tostadas" aria-live="polite"
      class="pointer-events-none fixed inset-x-0 bottom-0 z-[60] mx-auto flex max-w-md flex-col gap-2 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:left-auto lg:right-6 lg:mx-0 lg:w-96 lg:px-0 lg:pb-6">
@@ -51,7 +90,7 @@
 <article th:fragment="filaMovimiento(m, volver)" class="fila-mov"
          th:with="entra=${m.tipo.name() == 'INGRESO'}, sale=${m.tipo.name() == 'GASTO'}">
     <span class="fila-mov-icono"
-          th:classappend="${entra} ? 'bg-esmeralda/10 text-esmeralda' : (${sale} ? 'bg-coral/10 text-coral-claro' : 'bg-white/5 text-tinta-suave')"
+          th:classappend="${entra} ? 'bg-esmeralda/10 text-esmeralda' : (${sale} ? 'bg-coral/10 text-coral-claro' : 'bg-realce/5 text-tinta-suave')"
           th:text="${entra} ? '+' : (${sale} ? '−' : '⇄')" aria-hidden="true">−</span>
     <div class="fila-mov-info">
         <p class="fila-mov-titulo"
@@ -72,7 +111,7 @@
         <div class="fila-mov-acciones" th:unless="${soloLectura}">
             <a th:if="${m.editable}" th:href="@{/movimientos/{id}/editar(id=${m.id})}">Editar</a>
             <form th:if="${m.eliminable}" th:action="@{/movimientos/{id}/eliminar(id=${m.id})}" method="post"
-                  data-confirmar="¿Eliminar este movimiento?">
+                  data-confirmar="¿Eliminar este movimiento? Esta acción no se puede deshacer." data-confirmar-accion="Eliminar">
                 <input type="hidden" name="volver" th:value="${volver}">
                 <button type="submit" class="enlace-peligro">Eliminar</button>
             </form>
